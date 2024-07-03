@@ -8,6 +8,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DefaultJsonTokenizerTest {
@@ -97,6 +98,64 @@ public class DefaultJsonTokenizerTest {
         DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader(s));
         assertTrue(tokenizer.advance());
         assertEquals(TokenType.NULL, tokenizer.currentToken().getType());
+        assertFalse(tokenizer.advance());
+    }
+
+    @Test
+    public void testReadEmptyString() throws Exception {
+        DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader("\"\""));
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.STRING, tokenizer.currentToken().getType());
+        JsonStringToken token = assertInstanceOf(JsonStringToken.class, tokenizer.currentToken());
+        assertEquals("", token.getValue());
+        assertFalse(tokenizer.advance());
+    }
+
+    @Test
+    public void testReadString() throws Exception {
+        DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader("  \"Hello, World\" "));
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.STRING, tokenizer.currentToken().getType());
+        JsonStringToken token = assertInstanceOf(JsonStringToken.class, tokenizer.currentToken());
+        assertEquals("Hello, World", token.getValue());
+        assertFalse(tokenizer.advance());
+    }
+
+    @Test
+    public void testReadLongString() throws Exception {
+        DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader(" \t \"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam dictum congue arcu, eget laoreet nisl venenatis non. Nulla facilisi. Sed eget tincidunt neque, quis ullamcorper metus. Ut non nisi sit amet nisi malesuada laoreet a sit amet diam. Fusce dignissim nec sem at lobortis. Quisque dapibus quam in ex convallis condimentum. In euismod massa vitae vulputate gravida. Suspendisse eget dignissim est, quis dignissim massa. Maecenas lobortis dui a ornare sodales.\" \n "));
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.STRING, tokenizer.currentToken().getType());
+        JsonStringToken token = assertInstanceOf(JsonStringToken.class, tokenizer.currentToken());
+        assertEquals("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam dictum congue arcu, eget laoreet nisl venenatis non. Nulla facilisi. Sed eget tincidunt neque, quis ullamcorper metus. Ut non nisi sit amet nisi malesuada laoreet a sit amet diam. Fusce dignissim nec sem at lobortis. Quisque dapibus quam in ex convallis condimentum. In euismod massa vitae vulputate gravida. Suspendisse eget dignissim est, quis dignissim massa. Maecenas lobortis dui a ornare sodales.", token.getValue());
+        assertFalse(tokenizer.advance());
+    }
+
+    @Test
+    public void testReadMultipleStrings() throws Exception {
+        DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader("  \t\t \"abc\" \r \"org.junit.platform.commons.util.ReflectionUtils.invokeMethod\"  \"  \" \n\n \"test string\" "));
+        JsonStringToken token;
+
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.STRING, tokenizer.currentToken().getType());
+        token = assertInstanceOf(JsonStringToken.class, tokenizer.currentToken());
+        assertEquals("abc", token.getValue());
+
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.STRING, tokenizer.currentToken().getType());
+        token = assertInstanceOf(JsonStringToken.class, tokenizer.currentToken());
+        assertEquals("org.junit.platform.commons.util.ReflectionUtils.invokeMethod", token.getValue());
+
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.STRING, tokenizer.currentToken().getType());
+        token = assertInstanceOf(JsonStringToken.class, tokenizer.currentToken());
+        assertEquals("  ", token.getValue());
+
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.STRING, tokenizer.currentToken().getType());
+        token = assertInstanceOf(JsonStringToken.class, tokenizer.currentToken());
+        assertEquals("test string", token.getValue());
+
         assertFalse(tokenizer.advance());
     }
 }

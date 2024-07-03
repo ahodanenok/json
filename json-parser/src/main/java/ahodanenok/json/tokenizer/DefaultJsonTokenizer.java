@@ -1,14 +1,17 @@
 package ahodanenok.json.tokenizer;
 
 import java.io.Reader;
+import java.nio.CharBuffer;
 
 public final class DefaultJsonTokenizer implements JsonTokenizer {
 
     private final Reader reader;
     private JsonToken token;
+    private CharBuffer buf;
 
     public DefaultJsonTokenizer(Reader reader) {
         this.reader = reader;
+        this.buf = CharBuffer.allocate(128); // todo: configuratble initial capacity?
     }
 
     @Override
@@ -53,6 +56,8 @@ public final class DefaultJsonTokenizer implements JsonTokenizer {
         } else if (ch == 0x6E) { // n
             expectNext("ull");
             token = JsonToken.NULL;
+        } else if (ch == 0x22) { // "
+            token = new JsonStringToken(TokenType.STRING, readString());
         } else {
             // todo: custom exception?
             throw new IllegalStateException("unknown char: " + ch);
@@ -83,6 +88,39 @@ public final class DefaultJsonTokenizer implements JsonTokenizer {
             // todo: custom exception
             throw new IllegalStateException("unexpected character");
         }
+    }
+
+    // todo: implement escapes
+    private String readString() throws Exception {
+        buf.clear();
+
+        CharBuffer prevBuf;
+        int ch;
+        while (true) {
+            ch = reader.read();
+            if (ch == -1 || ch == 0x22) {
+                break;
+            }
+
+            if (buf.remaining() == 0) {
+                prevBuf = buf;
+                // todo: configurable string size limit?
+                buf = CharBuffer.allocate(Math.min(buf.capacity() * 2, Integer.MAX_VALUE - 8));
+                buf.put(prevBuf.flip());
+                if (buf.remaining() == 0) {
+                    throw new IllegalStateException("string too long");
+                }
+            }
+
+            buf.put((char) ch);
+        }
+
+        if (ch == -1) {
+            // todo: custom exception
+            throw new IllegalStateException("unexpected end of string");
+        }
+
+        return buf.flip().toString();
     }
 
     @Override
