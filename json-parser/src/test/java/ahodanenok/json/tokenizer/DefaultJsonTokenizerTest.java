@@ -72,4 +72,31 @@ public class DefaultJsonTokenizerTest {
         assertEquals(TokenType.VALUE_SEPARATOR, tokenizer.currentToken().getType());
         assertFalse(tokenizer.advance());
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "true", "\ttrue", "\rtrue", " true", " \r \t \n true", " \t \n true  \r " })
+    public void testReadTrue(String s) throws Exception {
+        DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader(s));
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.TRUE, tokenizer.currentToken().getType());
+        assertFalse(tokenizer.advance());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "false", "\tfalse", "\rfalse", " false", " \r \t \n false", " \t\n \rfalse  \t " })
+    public void testReadFalse(String s) throws Exception {
+        DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader(s));
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.FALSE, tokenizer.currentToken().getType());
+        assertFalse(tokenizer.advance());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "null", "\tnull", "\rnull", " null", " \r \t \n null", " \t\n \rnull  \t " })
+    public void testReadNull(String s) throws Exception {
+        DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader(s));
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.NULL, tokenizer.currentToken().getType());
+        assertFalse(tokenizer.advance());
+    }
 }
