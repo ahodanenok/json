@@ -14,6 +14,15 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
+tasks.named('test', Test) {
+    useJUnitPlatform()
+    testLogging {
+        events 'failed', 'passed', 'skipped', 'standard_out', 'standard_error'
+        exceptionFormat "full"
+    }
+}
 
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.3'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
