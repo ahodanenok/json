@@ -1,16 +1,18 @@
 package ahodanenok.json.parser.tokenizer;
 
+import java.io.PushbackReader;
 import java.io.Reader;
 import java.nio.CharBuffer;
 
 public final class DefaultJsonTokenizer implements JsonTokenizer {
 
-    private final Reader reader;
+    private final PushbackReader reader;
     private JsonToken token;
     private CharBuffer buf;
 
     public DefaultJsonTokenizer(Reader reader) {
-        this.reader = reader;
+        // todo: check if already pushback
+        this.reader = new PushbackReader(reader, 1);
         this.buf = CharBuffer.allocate(128); // todo: configuratble initial capacity?
     }
 
@@ -82,11 +84,11 @@ public final class DefaultJsonTokenizer implements JsonTokenizer {
             }
         }
 
-        ch = reader.read();
-        if (ch != -1 && !isWhitespace(ch)) {
-            // todo: custom exception
-            throw new IllegalStateException("unexpected character");
-        }
+        // ch = reader.read();
+        // if (ch != -1 && !isWhitespace(ch)) {
+        //     // todo: custom exception
+        //     throw new IllegalStateException("unexpected character");
+        // }
     }
 
     // todo: implement escapes
@@ -128,7 +130,12 @@ public final class DefaultJsonTokenizer implements JsonTokenizer {
         int ch;
         while (true) {
             ch = reader.read();
-            if (ch == -1 || isWhitespace(ch)) {
+            if (ch == -1) {
+                break;
+            } else if (isWhitespace(ch)
+                    // todo: temporary while number reading is not implemented
+                    || !(ch >= '0' && ch <= '9' || ch == '+' || ch == '-' || ch == 'e' || ch == 'E' || ch == '.')) {
+                reader.unread(ch);
                 break;
             }
 

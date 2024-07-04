@@ -186,4 +186,38 @@ public class DefaultJsonTokenizerTest {
         assertEquals(n, token.getValue());
         assertFalse(tokenizer.advance());
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "true,falsenull:[}-7.3456e+2]\"abc def\"{",
+        " true\t,\r\nfalse    null\t\t\t:\r[ }\n-7.3456e+2 \r ] \"abc def\"\t{\n"
+    })
+    public void testReadMultiple(String s) throws Exception {
+        DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader(s));
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.TRUE, tokenizer.currentToken().getType());
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.VALUE_SEPARATOR, tokenizer.currentToken().getType());
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.FALSE, tokenizer.currentToken().getType());
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.NULL, tokenizer.currentToken().getType());
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.NAME_SEPARATOR, tokenizer.currentToken().getType());
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.BEGIN_ARRAY, tokenizer.currentToken().getType());
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.END_OBJECT, tokenizer.currentToken().getType());
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.NUMBER, tokenizer.currentToken().getType());
+        assertEquals(-734.56, assertInstanceOf(JsonDoubleToken.class, tokenizer.currentToken()).getValue());
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.END_ARRAY, tokenizer.currentToken().getType());
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.STRING, tokenizer.currentToken().getType());
+        assertEquals("abc def", assertInstanceOf(JsonStringToken.class, tokenizer.currentToken()).getValue());
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.BEGIN_OBJECT, tokenizer.currentToken().getType());
+        assertFalse(tokenizer.advance());
+    }
 }
