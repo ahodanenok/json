@@ -1,4 +1,4 @@
-package ahodanenok.json.tokenizer;
+package ahodanenok.json.parser.tokenizer;
 
 import java.io.StringReader;
 

@@ -1,4 +1,4 @@
-package ahodanenok.json.tokenizer;
+package ahodanenok.json.parser.tokenizer;
 
 final class JsonDoubleToken extends JsonToken {
 
