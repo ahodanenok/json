@@ -4,6 +4,7 @@ import java.io.StringReader;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -156,6 +157,33 @@ public class DefaultJsonTokenizerTest {
         token = assertInstanceOf(JsonStringToken.class, tokenizer.currentToken());
         assertEquals("test string", token.getValue());
 
+        assertFalse(tokenizer.advance());
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "0,  0.0",
+        "-0,  -0.0",
+        "0.0,  0.0",
+        "-0.000,  -0.0",
+        "0e+100,  0.0",
+        "1,  1.0",
+        "-1,  -1.0",
+        "-1e5,  -100000",
+        "-1e-5,  -0.00001",
+        "123456.7890,  123456.7890",
+        "-123456.7890,  -123456.7890",
+        "52.378E+2,  5237.8",
+        "-731236.378E-4,  -73.1236378",
+        "321,  321",
+        "-321,  -321"
+    })
+    public void testReadNumber(String s, double n) throws Exception {
+        DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader(s));
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.NUMBER, tokenizer.currentToken().getType());
+        JsonDoubleToken token = assertInstanceOf(JsonDoubleToken.class, tokenizer.currentToken());
+        assertEquals(n, token.getValue());
         assertFalse(tokenizer.advance());
     }
 }

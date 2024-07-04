@@ -59,8 +59,7 @@ public final class DefaultJsonTokenizer implements JsonTokenizer {
         } else if (ch == 0x22) { // "
             token = new JsonStringToken(TokenType.STRING, readString());
         } else {
-            // todo: custom exception?
-            throw new IllegalStateException("unknown char: " + ch);
+            token = new JsonDoubleToken(TokenType.NUMBER, readNumber(ch));
         }
 
         return true;
@@ -94,7 +93,6 @@ public final class DefaultJsonTokenizer implements JsonTokenizer {
     private String readString() throws Exception {
         buf.clear();
 
-        CharBuffer prevBuf;
         int ch;
         while (true) {
             ch = reader.read();
@@ -103,11 +101,10 @@ public final class DefaultJsonTokenizer implements JsonTokenizer {
             }
 
             if (buf.remaining() == 0) {
-                prevBuf = buf;
                 // todo: configurable string size limit?
-                buf = CharBuffer.allocate(Math.min(buf.capacity() * 2, Integer.MAX_VALUE - 8));
-                buf.put(prevBuf.flip());
+                expandBuf();
                 if (buf.remaining() == 0) {
+                    // todo: custom exception
                     throw new IllegalStateException("string too long");
                 }
             }
@@ -121,6 +118,40 @@ public final class DefaultJsonTokenizer implements JsonTokenizer {
         }
 
         return buf.flip().toString();
+    }
+
+    // todo: config for reading as double/bigdecimal?
+    private double readNumber(int initialCh) throws Exception {
+        buf.clear();
+        buf.put((char) initialCh);
+
+        int ch;
+        while (true) {
+            ch = reader.read();
+            if (ch == -1 || isWhitespace(ch)) {
+                break;
+            }
+
+            if (buf.remaining() == 0) {
+                // todo: configurable number size limit?
+                expandBuf();
+                if (buf.remaining() == 0) {
+                    // todo: custom exception
+                    throw new IllegalStateException("number too long");
+                }
+            }
+
+            buf.put((char) ch);
+        }
+
+        // todo: implement https://datatracker.ietf.org/doc/html/rfc8259#section-6
+        return Double.parseDouble(buf.flip().toString());
+    }
+
+    private void expandBuf() {
+        CharBuffer prevBuf = buf;
+        buf = CharBuffer.allocate(Math.min(buf.capacity() * 2, Integer.MAX_VALUE - 8));
+        buf.put(prevBuf.flip());
     }
 
     @Override
