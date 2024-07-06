@@ -7,9 +7,14 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import ahodanenok.json.parser.JsonParseException;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DefaultJsonTokenizerTest {
@@ -85,6 +90,24 @@ public class DefaultJsonTokenizerTest {
     }
 
     @ParameterizedTest
+    @CsvSource({ "truE, E", "tRue, R", "trUe, U", "trye, y" })
+    public void testErrorWhenTrueNotCorrect(String s, char incorrect) {
+        DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader(s));
+        JsonParseException e = assertThrows(JsonParseException.class, () -> tokenizer.advance());
+        assertEquals(String.format("Unexpected character '%c' while 'true' was expected", incorrect), e.getMessage());
+        assertNotNull(e.getState());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "t", "tr", "tru" })
+    public void testErrorWhenTrueUnexpectedEnd(String s) {
+        DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader(s));
+        JsonParseException e = assertThrows(JsonParseException.class, () -> tokenizer.advance());
+        assertEquals("Unexpected end of text while 'true' was expected", e.getMessage());
+        assertNotNull(e.getState());
+    }
+
+    @ParameterizedTest
     @ValueSource(strings = { "false", "\tfalse", "\rfalse", " false", " \r \t \n false", " \t\n \rfalse  \t " })
     public void testReadFalse(String s) throws Exception {
         DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader(s));
@@ -94,12 +117,48 @@ public class DefaultJsonTokenizerTest {
     }
 
     @ParameterizedTest
+    @CsvSource({ "falsE, E", "falSe, S", "faLse, L", "fAlse, A", "falsy, y" })
+    public void testErrorWhenFalseNotCorrect(String s, char incorrect) {
+        DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader(s));
+        JsonParseException e = assertThrows(JsonParseException.class, () -> tokenizer.advance());
+        assertEquals(String.format("Unexpected character '%c' while 'false' was expected", incorrect), e.getMessage());
+        assertNotNull(e.getState());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "f", "fa", "fal", "fals" })
+    public void testErrorWhenFalseUnexpectedEnd(String s) {
+        DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader(s));
+        JsonParseException e = assertThrows(JsonParseException.class, () -> tokenizer.advance());
+        assertEquals("Unexpected end of text while 'false' was expected", e.getMessage());
+        assertNotNull(e.getState());
+    }
+
+    @ParameterizedTest
     @ValueSource(strings = { "null", "\tnull", "\rnull", " null", " \r \t \n null", " \t\n \rnull  \t " })
     public void testReadNull(String s) throws Exception {
         DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader(s));
         assertTrue(tokenizer.advance());
         assertEquals(TokenType.NULL, tokenizer.currentToken().getType());
         assertFalse(tokenizer.advance());
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "nulL, L", "nuLl, L", "nUll, U", "nul1, 1" })
+    public void testErrorWhenNullNotCorrect(String s, char incorrect) {
+        DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader(s));
+        JsonParseException e = assertThrows(JsonParseException.class, () -> tokenizer.advance());
+        assertEquals(String.format("Unexpected character '%c' while 'null' was expected", incorrect), e.getMessage());
+        assertNotNull(e.getState());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "n", "nu", "nul" })
+    public void testErrorWhenNullUnexpectedEnd(String s) {
+        DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader(s));
+        JsonParseException e = assertThrows(JsonParseException.class, () -> tokenizer.advance());
+        assertEquals("Unexpected end of text while 'null' was expected", e.getMessage());
+        assertNotNull(e.getState());
     }
 
     @Test
@@ -161,6 +220,15 @@ public class DefaultJsonTokenizerTest {
     }
 
     @ParameterizedTest
+    @ValueSource(strings = { "\"", "\"abc", "\"hello world" })
+    public void testErrorWhenStringNotTerminated(String s) {
+        DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader(s));
+        JsonParseException e = assertThrows(JsonParseException.class, () -> tokenizer.advance());
+        assertEquals("Unexpected end of the string, must be terminated with a double quote", e.getMessage());
+        assertNotNull(e.getState());
+    }
+
+    @ParameterizedTest
     @CsvSource({
         "0,  0.0",
         "-0,  -0.0",
@@ -219,5 +287,126 @@ public class DefaultJsonTokenizerTest {
         assertTrue(tokenizer.advance());
         assertEquals(TokenType.BEGIN_OBJECT, tokenizer.currentToken().getType());
         assertFalse(tokenizer.advance());
+    }
+
+    @Test
+    public void testUnusableWhenHalted() {
+        DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader("[123]"));
+        assertTrue(tokenizer.advance());
+        tokenizer.halt();
+
+        IllegalStateException e;
+        e = assertThrows(IllegalStateException.class, () -> tokenizer.currentToken());
+        assertEquals("Tokenizer was halted and can't be used anymore", e.getMessage());
+        e = assertThrows(IllegalStateException.class, () -> tokenizer.advance());
+        assertEquals("Tokenizer was halted and can't be used anymore", e.getMessage());
+        e = assertThrows(IllegalStateException.class, () -> tokenizer.halt());
+        assertEquals("Tokenizer was halted and can't be used anymore", e.getMessage());
+        assertDoesNotThrow(() -> tokenizer.currentLocation());
+    }
+
+    @Test
+    public void testErrorWhenNotAdvanced() {
+        DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader("1"));
+
+        IllegalStateException e;
+        e = assertThrows(IllegalStateException.class, () -> tokenizer.currentToken());
+        assertEquals("There is no token to return. This method could be called only when advance() returned true", e.getMessage());
+        assertTrue(tokenizer.advance());
+        assertDoesNotThrow(() -> tokenizer.currentToken());
+        assertFalse(tokenizer.advance());
+        e = assertThrows(IllegalStateException.class, () -> tokenizer.currentToken());
+        assertEquals("There is no token to return. This method could be called only when advance() returned true", e.getMessage());
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "abc, abc",
+        "hello-world, hello-w...",
+        "True, True", "False, False",
+        "Null, Null",
+        "=12345678, =123456...",
+        "check\": \"abc\", check\":..."
+    })
+    public void testErrorWhenUnexpectedToken(String s, String incorrect) {
+        DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader(s));
+        JsonParseException e = assertThrows(JsonParseException.class, () -> tokenizer.advance());
+        assertEquals(String.format("Unexpected token '%s' at pos 0", incorrect), e.getMessage());
+        assertNotNull(e.getState());
+    }
+
+    @Test
+    public void testLocation() {
+        DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader(
+            "\t{\n"
+            + "}  true \n"
+            + "false ][\n"
+            + "\n"
+            + "\n"
+            + "123\n"
+            + "null :\n"));
+
+        assertEquals(0, tokenizer.currentLocation().getRow());
+        assertEquals(0, tokenizer.currentLocation().getColumn());
+        assertEquals(0, tokenizer.currentLocation().getPosition());
+
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.BEGIN_OBJECT, tokenizer.currentToken().getType());
+        assertEquals(0, tokenizer.currentLocation().getRow());
+        assertEquals(2, tokenizer.currentLocation().getColumn());
+        assertEquals(2, tokenizer.currentLocation().getPosition());
+
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.END_OBJECT, tokenizer.currentToken().getType());
+        assertEquals(1, tokenizer.currentLocation().getRow());
+        assertEquals(1, tokenizer.currentLocation().getColumn());
+        assertEquals(4, tokenizer.currentLocation().getPosition());
+
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.TRUE, tokenizer.currentToken().getType());
+        assertEquals(1, tokenizer.currentLocation().getRow());
+        assertEquals(7, tokenizer.currentLocation().getColumn());
+        assertEquals(10, tokenizer.currentLocation().getPosition());
+
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.FALSE, tokenizer.currentToken().getType());
+        assertEquals(2, tokenizer.currentLocation().getRow());
+        assertEquals(5, tokenizer.currentLocation().getColumn());
+        assertEquals(17, tokenizer.currentLocation().getPosition());
+
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.END_ARRAY, tokenizer.currentToken().getType());
+        assertEquals(2, tokenizer.currentLocation().getRow());
+        assertEquals(7, tokenizer.currentLocation().getColumn());
+        assertEquals(19, tokenizer.currentLocation().getPosition());
+
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.BEGIN_ARRAY, tokenizer.currentToken().getType());
+        assertEquals(2, tokenizer.currentLocation().getRow());
+        assertEquals(8, tokenizer.currentLocation().getColumn());
+        assertEquals(20, tokenizer.currentLocation().getPosition());
+
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.NUMBER, tokenizer.currentToken().getType());
+        assertEquals(5, tokenizer.currentLocation().getRow());
+        assertEquals(3, tokenizer.currentLocation().getColumn());
+        assertEquals(26, tokenizer.currentLocation().getPosition());
+
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.NULL, tokenizer.currentToken().getType());
+        assertEquals(6, tokenizer.currentLocation().getRow());
+        assertEquals(4, tokenizer.currentLocation().getColumn());
+        assertEquals(31, tokenizer.currentLocation().getPosition());
+
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.NAME_SEPARATOR, tokenizer.currentToken().getType());
+        assertEquals(6, tokenizer.currentLocation().getRow());
+        assertEquals(6, tokenizer.currentLocation().getColumn());
+        assertEquals(33, tokenizer.currentLocation().getPosition());
+
+        assertFalse(tokenizer.advance());
+        assertEquals(7, tokenizer.currentLocation().getRow());
+        assertEquals(0, tokenizer.currentLocation().getColumn());
+        assertEquals(34, tokenizer.currentLocation().getPosition());
     }
 }
