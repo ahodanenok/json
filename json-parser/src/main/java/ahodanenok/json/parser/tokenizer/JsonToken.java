@@ -21,4 +21,14 @@ public class JsonToken {
     public TokenType getType() {
         return type;
     }
+
+    public double doubleValue() {
+        throw new UnsupportedOperationException(
+            String.format("Token of type '%s' is not a number", type));
+    }
+
+    public String stringValue() {
+        throw new UnsupportedOperationException(
+            String.format("Token of type '%s' is not a string", type));
+    }
 }

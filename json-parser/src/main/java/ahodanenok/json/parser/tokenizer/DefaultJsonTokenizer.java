@@ -144,6 +144,7 @@ public final class DefaultJsonTokenizer implements JsonTokenizer {
         int ch;
         while (true) {
             ch = reader.read();
+            // todo: throw an error if a control character is encountered (x00-x1F)
             updateLocation(ch);
             if (ch == -1 || ch == 0x22) {
                 break;

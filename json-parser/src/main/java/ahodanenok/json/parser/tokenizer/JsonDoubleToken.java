@@ -9,7 +9,8 @@ final class JsonDoubleToken extends JsonToken {
         this.value = value;
     }
 
-    public double getValue() {
+    @Override
+    public double doubleValue() {
         return value;
     }
 }

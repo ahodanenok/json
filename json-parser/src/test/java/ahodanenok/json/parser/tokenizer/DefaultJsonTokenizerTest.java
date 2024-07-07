@@ -167,7 +167,7 @@ public class DefaultJsonTokenizerTest {
         assertTrue(tokenizer.advance());
         assertEquals(TokenType.STRING, tokenizer.currentToken().getType());
         JsonStringToken token = assertInstanceOf(JsonStringToken.class, tokenizer.currentToken());
-        assertEquals("", token.getValue());
+        assertEquals("", token.stringValue());
         assertFalse(tokenizer.advance());
     }
 
@@ -177,7 +177,7 @@ public class DefaultJsonTokenizerTest {
         assertTrue(tokenizer.advance());
         assertEquals(TokenType.STRING, tokenizer.currentToken().getType());
         JsonStringToken token = assertInstanceOf(JsonStringToken.class, tokenizer.currentToken());
-        assertEquals("Hello, World", token.getValue());
+        assertEquals("Hello, World", token.stringValue());
         assertFalse(tokenizer.advance());
     }
 
@@ -187,7 +187,7 @@ public class DefaultJsonTokenizerTest {
         assertTrue(tokenizer.advance());
         assertEquals(TokenType.STRING, tokenizer.currentToken().getType());
         JsonStringToken token = assertInstanceOf(JsonStringToken.class, tokenizer.currentToken());
-        assertEquals("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam dictum congue arcu, eget laoreet nisl venenatis non. Nulla facilisi. Sed eget tincidunt neque, quis ullamcorper metus. Ut non nisi sit amet nisi malesuada laoreet a sit amet diam. Fusce dignissim nec sem at lobortis. Quisque dapibus quam in ex convallis condimentum. In euismod massa vitae vulputate gravida. Suspendisse eget dignissim est, quis dignissim massa. Maecenas lobortis dui a ornare sodales.", token.getValue());
+        assertEquals("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam dictum congue arcu, eget laoreet nisl venenatis non. Nulla facilisi. Sed eget tincidunt neque, quis ullamcorper metus. Ut non nisi sit amet nisi malesuada laoreet a sit amet diam. Fusce dignissim nec sem at lobortis. Quisque dapibus quam in ex convallis condimentum. In euismod massa vitae vulputate gravida. Suspendisse eget dignissim est, quis dignissim massa. Maecenas lobortis dui a ornare sodales.", token.stringValue());
         assertFalse(tokenizer.advance());
     }
 
@@ -199,22 +199,22 @@ public class DefaultJsonTokenizerTest {
         assertTrue(tokenizer.advance());
         assertEquals(TokenType.STRING, tokenizer.currentToken().getType());
         token = assertInstanceOf(JsonStringToken.class, tokenizer.currentToken());
-        assertEquals("abc", token.getValue());
+        assertEquals("abc", token.stringValue());
 
         assertTrue(tokenizer.advance());
         assertEquals(TokenType.STRING, tokenizer.currentToken().getType());
         token = assertInstanceOf(JsonStringToken.class, tokenizer.currentToken());
-        assertEquals("org.junit.platform.commons.util.ReflectionUtils.invokeMethod", token.getValue());
+        assertEquals("org.junit.platform.commons.util.ReflectionUtils.invokeMethod", token.stringValue());
 
         assertTrue(tokenizer.advance());
         assertEquals(TokenType.STRING, tokenizer.currentToken().getType());
         token = assertInstanceOf(JsonStringToken.class, tokenizer.currentToken());
-        assertEquals("  ", token.getValue());
+        assertEquals("  ", token.stringValue());
 
         assertTrue(tokenizer.advance());
         assertEquals(TokenType.STRING, tokenizer.currentToken().getType());
         token = assertInstanceOf(JsonStringToken.class, tokenizer.currentToken());
-        assertEquals("test string", token.getValue());
+        assertEquals("test string", token.stringValue());
 
         assertFalse(tokenizer.advance());
     }
@@ -251,7 +251,7 @@ public class DefaultJsonTokenizerTest {
         assertTrue(tokenizer.advance());
         assertEquals(TokenType.NUMBER, tokenizer.currentToken().getType());
         JsonDoubleToken token = assertInstanceOf(JsonDoubleToken.class, tokenizer.currentToken());
-        assertEquals(n, token.getValue());
+        assertEquals(n, token.doubleValue());
         assertFalse(tokenizer.advance());
     }
 
@@ -278,12 +278,12 @@ public class DefaultJsonTokenizerTest {
         assertEquals(TokenType.END_OBJECT, tokenizer.currentToken().getType());
         assertTrue(tokenizer.advance());
         assertEquals(TokenType.NUMBER, tokenizer.currentToken().getType());
-        assertEquals(-734.56, assertInstanceOf(JsonDoubleToken.class, tokenizer.currentToken()).getValue());
+        assertEquals(-734.56, assertInstanceOf(JsonDoubleToken.class, tokenizer.currentToken()).doubleValue());
         assertTrue(tokenizer.advance());
         assertEquals(TokenType.END_ARRAY, tokenizer.currentToken().getType());
         assertTrue(tokenizer.advance());
         assertEquals(TokenType.STRING, tokenizer.currentToken().getType());
-        assertEquals("abc def", assertInstanceOf(JsonStringToken.class, tokenizer.currentToken()).getValue());
+        assertEquals("abc def", assertInstanceOf(JsonStringToken.class, tokenizer.currentToken()).stringValue());
         assertTrue(tokenizer.advance());
         assertEquals(TokenType.BEGIN_OBJECT, tokenizer.currentToken().getType());
         assertFalse(tokenizer.advance());

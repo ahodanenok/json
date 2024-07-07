@@ -9,7 +9,8 @@ final class JsonStringToken extends JsonToken  {
         this.value = value;
     }
 
-    public String getValue() {
+    @Override
+    public String stringValue() {
         return value;
     }
 }
