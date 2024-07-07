@@ -9,7 +9,7 @@ public final class JsonNumber extends JsonValue {
         this.value = value;
     }
 
-    public double getValue() {
+    public double doubleValue() {
         return value;
     }
 }

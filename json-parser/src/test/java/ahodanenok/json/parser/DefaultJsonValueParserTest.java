@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import ahodanenok.json.value.JsonArray;
 import ahodanenok.json.value.JsonBoolean;
 import ahodanenok.json.value.JsonNull;
 import ahodanenok.json.value.JsonNumber;
@@ -57,7 +58,7 @@ public class DefaultJsonValueParserTest {
         JsonValueParser parser = new DefaultJsonValueParser();
         JsonValue value = parser.readValue(new StringReader(s));
         assertEquals(value.getType(), ValueType.NUMBER);
-        assertEquals(expected, assertInstanceOf(JsonNumber.class, value).getValue());
+        assertEquals(expected, assertInstanceOf(JsonNumber.class, value).doubleValue());
     }
 
     @Test
@@ -82,5 +83,87 @@ public class DefaultJsonValueParserTest {
         JsonValue value = parser.readValue(new StringReader("false"));
         assertEquals(value.getType(), ValueType.BOOLEAN);
         assertEquals(false, assertInstanceOf(JsonBoolean.class, value).getValue());
+    }
+
+    @Test
+    public void testParseEmptyArray() {
+        JsonValueParser parser = new DefaultJsonValueParser();
+        JsonValue value = parser.readValue(new StringReader("[]"));
+        assertEquals(value.getType(), ValueType.ARRAY);
+        JsonArray array = assertInstanceOf(JsonArray.class, value);
+        assertEquals(0, array.size());
+    }
+
+    @Test
+    public void testParseArrayOneLevel() {
+        JsonValueParser parser = new DefaultJsonValueParser();
+        JsonValue value = parser.readValue(new StringReader("[1.23, true, \"true\", null]"));
+        assertEquals(value.getType(), ValueType.ARRAY);
+        JsonArray array = assertInstanceOf(JsonArray.class, value);
+        assertEquals(4, array.size());
+        assertEquals(ValueType.NUMBER, array.getItem(0).getType());
+        assertEquals(1.23, assertInstanceOf(JsonNumber.class, array.getItem(0)).doubleValue());
+        assertEquals(ValueType.BOOLEAN, array.getItem(1).getType());
+        assertEquals(true, assertInstanceOf(JsonBoolean.class, array.getItem(1)).getValue());
+        assertEquals(ValueType.STRING, array.getItem(2).getType());
+        assertEquals("true", assertInstanceOf(JsonString.class, array.getItem(2)).getValue());
+        assertEquals(ValueType.NULL, array.getItem(3).getType());
+    }
+
+    @Test
+    public void testParseArrayNested() {
+        JsonValueParser parser = new DefaultJsonValueParser();
+        JsonValue value = parser.readValue(new StringReader("""
+            [
+                false,
+                [
+                    [500],
+                    null
+                ],
+                [],
+                true,
+                [
+                    "x",
+                    [
+                        \"yz\",
+                        [
+                            [
+                                [-2.34]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        """));
+        assertEquals(value.getType(), ValueType.ARRAY);
+        JsonArray array = assertInstanceOf(JsonArray.class, value);
+        assertEquals(5, array.size());
+        assertEquals(ValueType.BOOLEAN, array.getItem(0).getType());
+        assertEquals(false, assertInstanceOf(JsonBoolean.class, array.getItem(0)).getValue());
+        assertEquals(ValueType.ARRAY, array.getItem(1).getType());
+        assertEquals(2, ((JsonArray) array.getItem(1)).size());
+        assertEquals(1, ((JsonArray) ((JsonArray) array.getItem(1)).getItem(0)).size());
+        assertEquals(ValueType.NUMBER, ((JsonArray) ((JsonArray) array.getItem(1)).getItem(0)).getItem(0).getType());
+        assertEquals(500, ((JsonNumber) ((JsonArray) ((JsonArray) array.getItem(1)).getItem(0)).getItem(0)).doubleValue());
+        assertEquals(ValueType.NULL, ((JsonArray) array.getItem(1)).getItem(1).getType());
+        assertEquals(0, ((JsonArray) array.getItem(2)).size());
+        assertEquals(ValueType.BOOLEAN, array.getItem(3).getType());
+        assertEquals(true, ((JsonBoolean) array.getItem(3)).getValue());
+        assertEquals(ValueType.ARRAY, array.getItem(4).getType());
+        assertEquals(2, ((JsonArray) array.getItem(4)).size());
+        assertEquals(ValueType.STRING, ((JsonArray) array.getItem(4)).getItem(0).getType());
+        assertEquals("x", ((JsonString) ((JsonArray) array.getItem(4)).getItem(0)).getValue());
+        assertEquals(ValueType.ARRAY, ((JsonArray) array.getItem(4)).getItem(1).getType());
+        assertEquals(2, ((JsonArray) ((JsonArray) array.getItem(4)).getItem(1)).size());
+        assertEquals(ValueType.STRING, ((JsonArray) ((JsonArray) array.getItem(4)).getItem(1)).getItem(0).getType());
+        assertEquals("yz", ((JsonString) ((JsonArray) ((JsonArray) array.getItem(4)).getItem(1)).getItem(0)).getValue());
+        assertEquals(ValueType.ARRAY, ((JsonArray) ((JsonArray) array.getItem(4)).getItem(1)).getItem(1).getType());
+        assertEquals(1, ((JsonArray) ((JsonArray) ((JsonArray) array.getItem(4)).getItem(1)).getItem(1)).size());
+        assertEquals(ValueType.ARRAY, ((JsonArray) ((JsonArray) ((JsonArray) array.getItem(4)).getItem(1)).getItem(1)).getItem(0).getType());
+        assertEquals(1, ((JsonArray) ((JsonArray) ((JsonArray) ((JsonArray) array.getItem(4)).getItem(1)).getItem(1)).getItem(0)).size());
+        assertEquals(ValueType.ARRAY, ((JsonArray) ((JsonArray) ((JsonArray) ((JsonArray) array.getItem(4)).getItem(1)).getItem(1)).getItem(0)).getItem(0).getType());
+        assertEquals(1, ((JsonArray) ((JsonArray) ((JsonArray) ((JsonArray) ((JsonArray) array.getItem(4)).getItem(1)).getItem(1)).getItem(0)).getItem(0)).size());
+        assertEquals(ValueType.NUMBER, ((JsonArray) ((JsonArray) ((JsonArray) ((JsonArray) ((JsonArray) array.getItem(4)).getItem(1)).getItem(1)).getItem(0)).getItem(0)).getItem(0).getType());
+        assertEquals(-2.34, ((JsonNumber) ((JsonArray) ((JsonArray) ((JsonArray) ((JsonArray) ((JsonArray) array.getItem(4)).getItem(1)).getItem(1)).getItem(0)).getItem(0)).getItem(0)).doubleValue());
     }
 }
