@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import ahodanenok.json.value.JsonNumber;
 import ahodanenok.json.value.JsonString;
 import ahodanenok.json.value.JsonValue;
 import ahodanenok.json.value.ValueType;
@@ -41,5 +42,19 @@ public class DefaultJsonValueParserTest {
         JsonValue value = parser.readValue(new StringReader(s));
         assertEquals(value.getType(), ValueType.STRING);
         assertEquals(expected, assertInstanceOf(JsonString.class, value).getValue());
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "0.00,     0.0",
+        "-12345.6789,     -12345.6789",
+        "37e+3,     37000",
+        "-5E-4,     -0.0005"
+    })
+    public void testParseNumber(String s, double expected) {
+        JsonValueParser parser = new DefaultJsonValueParser();
+        JsonValue value = parser.readValue(new StringReader(s));
+        assertEquals(value.getType(), ValueType.NUMBER);
+        assertEquals(expected, assertInstanceOf(JsonNumber.class, value).getValue());
     }
 }
