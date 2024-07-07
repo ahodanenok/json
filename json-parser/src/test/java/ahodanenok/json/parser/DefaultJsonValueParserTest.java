@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import ahodanenok.json.value.JsonBoolean;
 import ahodanenok.json.value.JsonNull;
 import ahodanenok.json.value.JsonNumber;
 import ahodanenok.json.value.JsonString;
@@ -65,5 +66,21 @@ public class DefaultJsonValueParserTest {
         JsonValue value = parser.readValue(new StringReader("null"));
         assertEquals(value.getType(), ValueType.NULL);
         assertInstanceOf(JsonNull.class, value);
+    }
+
+    @Test
+    public void testParseTrue() {
+        JsonValueParser parser = new DefaultJsonValueParser();
+        JsonValue value = parser.readValue(new StringReader("true"));
+        assertEquals(value.getType(), ValueType.BOOLEAN);
+        assertEquals(true, assertInstanceOf(JsonBoolean.class, value).getValue());
+    }
+
+    @Test
+    public void testParseFalse() {
+        JsonValueParser parser = new DefaultJsonValueParser();
+        JsonValue value = parser.readValue(new StringReader("false"));
+        assertEquals(value.getType(), ValueType.BOOLEAN);
+        assertEquals(false, assertInstanceOf(JsonBoolean.class, value).getValue());
     }
 }
