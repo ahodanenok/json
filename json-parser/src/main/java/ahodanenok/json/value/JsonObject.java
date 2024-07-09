@@ -4,19 +4,23 @@ import java.util.Map;
 
 public final class JsonObject extends JsonValue {
 
-    private final Map<String, JsonValue> fields;
+    private final Map<String, JsonValue> values;
 
-    public JsonObject(Map<String, JsonValue> fields) {
+    public JsonObject(Map<String, JsonValue> values) {
         super(ValueType.OBJECT);
-        this.fields = fields;
+        this.values = values;
     }
 
-    public JsonValue getField(String name) {
+    public boolean containsValue(String name) {
+        return values.containsKey(name);
+    }
+
+    public JsonValue getValue(String name) {
         // todo: not found
-        return fields.get(name);
+        return values.get(name);
     }
 
     public int size() {
-        return fields.size();
+        return values.size();
     }
 }
