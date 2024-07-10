@@ -8,7 +8,31 @@ public abstract class JsonValue {
         this.type = type;
     }
 
-    public ValueType getType() {
+    public final ValueType getType() {
         return type;
+    }
+
+    public final JsonNumber asNumber() {
+        return (JsonNumber) this;
+    }
+
+    public final JsonString asString() {
+        return (JsonString) this;
+    }
+
+    public final JsonBoolean asBoolean() {
+        return (JsonBoolean) this;
+    }
+
+    public final JsonArray asArray() {
+        return (JsonArray) this;
+    }
+
+    public final JsonObject asObject() {
+        return (JsonObject) this;
+    }
+
+    public final boolean isNull() {
+        return getType() == ValueType.NULL;
     }
 }

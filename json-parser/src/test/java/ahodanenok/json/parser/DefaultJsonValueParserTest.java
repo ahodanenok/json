@@ -34,7 +34,7 @@ public class DefaultJsonValueParserTest {
         JsonValueParser parser = new DefaultJsonValueParser();
         JsonValue value = parser.readValue(new StringReader("\"\""));
         assertEquals(value.getType(), ValueType.STRING);
-        assertEquals("", assertInstanceOf(JsonString.class, value).getValue());
+        assertEquals("", value.asString().getValue());
     }
 
     @ParameterizedTest
@@ -46,7 +46,7 @@ public class DefaultJsonValueParserTest {
         JsonValueParser parser = new DefaultJsonValueParser();
         JsonValue value = parser.readValue(new StringReader(s));
         assertEquals(value.getType(), ValueType.STRING);
-        assertEquals(expected, assertInstanceOf(JsonString.class, value).getValue());
+        assertEquals(expected, value.asString().getValue());
     }
 
     @ParameterizedTest
@@ -60,7 +60,7 @@ public class DefaultJsonValueParserTest {
         JsonValueParser parser = new DefaultJsonValueParser();
         JsonValue value = parser.readValue(new StringReader(s));
         assertEquals(value.getType(), ValueType.NUMBER);
-        assertEquals(expected, assertInstanceOf(JsonNumber.class, value).doubleValue());
+        assertEquals(expected, value.asNumber().doubleValue());
     }
 
     @Test
@@ -68,7 +68,7 @@ public class DefaultJsonValueParserTest {
         JsonValueParser parser = new DefaultJsonValueParser();
         JsonValue value = parser.readValue(new StringReader("null"));
         assertEquals(value.getType(), ValueType.NULL);
-        assertInstanceOf(JsonNull.class, value);
+        assertTrue(value.isNull());
     }
 
     @Test
@@ -76,7 +76,7 @@ public class DefaultJsonValueParserTest {
         JsonValueParser parser = new DefaultJsonValueParser();
         JsonValue value = parser.readValue(new StringReader("true"));
         assertEquals(value.getType(), ValueType.BOOLEAN);
-        assertEquals(true, assertInstanceOf(JsonBoolean.class, value).getValue());
+        assertEquals(true, value.asBoolean().getValue());
     }
 
     @Test
@@ -84,7 +84,7 @@ public class DefaultJsonValueParserTest {
         JsonValueParser parser = new DefaultJsonValueParser();
         JsonValue value = parser.readValue(new StringReader("false"));
         assertEquals(value.getType(), ValueType.BOOLEAN);
-        assertEquals(false, assertInstanceOf(JsonBoolean.class, value).getValue());
+        assertEquals(false, value.asBoolean().getValue());
     }
 
     @Test
@@ -92,8 +92,7 @@ public class DefaultJsonValueParserTest {
         JsonValueParser parser = new DefaultJsonValueParser();
         JsonValue value = parser.readValue(new StringReader("[]"));
         assertEquals(value.getType(), ValueType.ARRAY);
-        JsonArray array = assertInstanceOf(JsonArray.class, value);
-        assertEquals(0, array.size());
+        assertEquals(0, value.asArray().size());
     }
 
     @Test
@@ -104,11 +103,11 @@ public class DefaultJsonValueParserTest {
         JsonArray array = assertInstanceOf(JsonArray.class, value);
         assertEquals(4, array.size());
         assertEquals(ValueType.NUMBER, array.getItem(0).getType());
-        assertEquals(1.23, assertInstanceOf(JsonNumber.class, array.getItem(0)).doubleValue());
+        assertEquals(1.23, array.getItem(0).asNumber().doubleValue());
         assertEquals(ValueType.BOOLEAN, array.getItem(1).getType());
-        assertEquals(true, assertInstanceOf(JsonBoolean.class, array.getItem(1)).getValue());
+        assertEquals(true, array.getItem(1).asBoolean().getValue());
         assertEquals(ValueType.STRING, array.getItem(2).getType());
-        assertEquals("true", assertInstanceOf(JsonString.class, array.getItem(2)).getValue());
+        assertEquals("true", array.getItem(2).asString().getValue());
         assertEquals(ValueType.NULL, array.getItem(3).getType());
     }
 
@@ -138,35 +137,35 @@ public class DefaultJsonValueParserTest {
             ]
         """));
         assertEquals(value.getType(), ValueType.ARRAY);
-        JsonArray array = assertInstanceOf(JsonArray.class, value);
+        JsonArray array = value.asArray();
         assertEquals(5, array.size());
         assertEquals(ValueType.BOOLEAN, array.getItem(0).getType());
-        assertEquals(false, assertInstanceOf(JsonBoolean.class, array.getItem(0)).getValue());
+        assertEquals(false, array.getItem(0).asBoolean().getValue());
         assertEquals(ValueType.ARRAY, array.getItem(1).getType());
-        assertEquals(2, ((JsonArray) array.getItem(1)).size());
-        assertEquals(1, ((JsonArray) ((JsonArray) array.getItem(1)).getItem(0)).size());
-        assertEquals(ValueType.NUMBER, ((JsonArray) ((JsonArray) array.getItem(1)).getItem(0)).getItem(0).getType());
-        assertEquals(500, ((JsonNumber) ((JsonArray) ((JsonArray) array.getItem(1)).getItem(0)).getItem(0)).doubleValue());
-        assertEquals(ValueType.NULL, ((JsonArray) array.getItem(1)).getItem(1).getType());
-        assertEquals(0, ((JsonArray) array.getItem(2)).size());
+        assertEquals(2, array.getItem(1).asArray().size());
+        assertEquals(1, array.getItem(1).asArray().getItem(0).asArray().size());
+        assertEquals(ValueType.NUMBER, array.getItem(1).asArray().getItem(0).asArray().getItem(0).getType());
+        assertEquals(500, array.getItem(1).asArray().getItem(0).asArray().getItem(0).asNumber().doubleValue());
+        assertEquals(ValueType.NULL,  array.getItem(1).asArray().getItem(1).getType());
+        assertEquals(0, array.getItem(2).asArray().size());
         assertEquals(ValueType.BOOLEAN, array.getItem(3).getType());
-        assertEquals(true, ((JsonBoolean) array.getItem(3)).getValue());
+        assertEquals(true, array.getItem(3).asBoolean().getValue());
         assertEquals(ValueType.ARRAY, array.getItem(4).getType());
-        assertEquals(2, ((JsonArray) array.getItem(4)).size());
-        assertEquals(ValueType.STRING, ((JsonArray) array.getItem(4)).getItem(0).getType());
-        assertEquals("x", ((JsonString) ((JsonArray) array.getItem(4)).getItem(0)).getValue());
-        assertEquals(ValueType.ARRAY, ((JsonArray) array.getItem(4)).getItem(1).getType());
-        assertEquals(2, ((JsonArray) ((JsonArray) array.getItem(4)).getItem(1)).size());
-        assertEquals(ValueType.STRING, ((JsonArray) ((JsonArray) array.getItem(4)).getItem(1)).getItem(0).getType());
-        assertEquals("yz", ((JsonString) ((JsonArray) ((JsonArray) array.getItem(4)).getItem(1)).getItem(0)).getValue());
-        assertEquals(ValueType.ARRAY, ((JsonArray) ((JsonArray) array.getItem(4)).getItem(1)).getItem(1).getType());
-        assertEquals(1, ((JsonArray) ((JsonArray) ((JsonArray) array.getItem(4)).getItem(1)).getItem(1)).size());
-        assertEquals(ValueType.ARRAY, ((JsonArray) ((JsonArray) ((JsonArray) array.getItem(4)).getItem(1)).getItem(1)).getItem(0).getType());
-        assertEquals(1, ((JsonArray) ((JsonArray) ((JsonArray) ((JsonArray) array.getItem(4)).getItem(1)).getItem(1)).getItem(0)).size());
-        assertEquals(ValueType.ARRAY, ((JsonArray) ((JsonArray) ((JsonArray) ((JsonArray) array.getItem(4)).getItem(1)).getItem(1)).getItem(0)).getItem(0).getType());
-        assertEquals(1, ((JsonArray) ((JsonArray) ((JsonArray) ((JsonArray) ((JsonArray) array.getItem(4)).getItem(1)).getItem(1)).getItem(0)).getItem(0)).size());
-        assertEquals(ValueType.NUMBER, ((JsonArray) ((JsonArray) ((JsonArray) ((JsonArray) ((JsonArray) array.getItem(4)).getItem(1)).getItem(1)).getItem(0)).getItem(0)).getItem(0).getType());
-        assertEquals(-2.34, ((JsonNumber) ((JsonArray) ((JsonArray) ((JsonArray) ((JsonArray) ((JsonArray) array.getItem(4)).getItem(1)).getItem(1)).getItem(0)).getItem(0)).getItem(0)).doubleValue());
+        assertEquals(2, array.getItem(4).asArray().size());
+        assertEquals(ValueType.STRING, array.getItem(4).asArray().getItem(0).getType());
+        assertEquals("x", array.getItem(4).asArray().getItem(0).asString().getValue());
+        assertEquals(ValueType.ARRAY, array.getItem(4).asArray().getItem(1).getType());
+        assertEquals(2, array.getItem(4).asArray().getItem(1).asArray().size());
+        assertEquals(ValueType.STRING, array.getItem(4).asArray().getItem(1).asArray().getItem(0).getType());
+        assertEquals("yz", array.getItem(4).asArray().getItem(1).asArray().getItem(0).asString().getValue());
+        assertEquals(ValueType.ARRAY, array.getItem(4).asArray().getItem(1).asArray().getItem(1).getType());
+        assertEquals(1, array.getItem(4).asArray().getItem(1).asArray().getItem(1).asArray().size());
+        assertEquals(ValueType.ARRAY, array.getItem(4).asArray().getItem(1).asArray().getItem(1).asArray().getItem(0).getType());
+        assertEquals(1, array.getItem(4).asArray().getItem(1).asArray().getItem(1).asArray().getItem(0).asArray().size());
+        assertEquals(ValueType.ARRAY, array.getItem(4).asArray().getItem(1).asArray().getItem(1).asArray().getItem(0).asArray().getItem(0).getType());
+        assertEquals(1, array.getItem(4).asArray().getItem(1).asArray().getItem(1).asArray().getItem(0).asArray().getItem(0).asArray().size());
+        assertEquals(ValueType.NUMBER, array.getItem(4).asArray().getItem(1).asArray().getItem(1).asArray().getItem(0).asArray().getItem(0).asArray().getItem(0).getType());
+        assertEquals(-2.34, array.getItem(4).asArray().getItem(1).asArray().getItem(1).asArray().getItem(0).asArray().getItem(0).asArray().getItem(0).asNumber().doubleValue());
     }
 
     @Test
@@ -187,7 +186,7 @@ public class DefaultJsonValueParserTest {
         assertEquals(1, obj.size());
         assertTrue(obj.containsValue(""));
         assertEquals(ValueType.NUMBER, obj.getValue("").getType());
-        assertEquals(1, ((JsonNumber) obj.getValue("")).doubleValue());
+        assertEquals(1, obj.getValue("").asNumber().doubleValue());
     }
 
     @Test
@@ -207,20 +206,20 @@ public class DefaultJsonValueParserTest {
         assertEquals(5, obj.size());
         assertTrue(obj.containsValue("status"));
         assertEquals(ValueType.STRING, obj.getValue("status").getType());
-        assertEquals("ok", ((JsonString) obj.getValue("status")).getValue());
+        assertEquals("ok", obj.getValue("status").asString().getValue());
         assertTrue(obj.containsValue("num"));
         assertEquals(ValueType.NUMBER, obj.getValue("num").getType());
-        assertEquals(-321, ((JsonNumber) obj.getValue("num")).doubleValue());
+        assertEquals(-321, obj.getValue("num").asNumber().doubleValue());
         assertTrue(obj.containsValue("items"));
         assertEquals(ValueType.ARRAY, obj.getValue("items").getType());
-        assertEquals(2, ((JsonArray) obj.getValue("items")).size());
-        assertEquals(ValueType.STRING, ((JsonArray) obj.getValue("items")).getItem(0).getType());
-        assertEquals("a", ((JsonString) ((JsonArray) obj.getValue("items")).getItem(0)).getValue());
-        assertEquals(ValueType.STRING, ((JsonArray) obj.getValue("items")).getItem(1).getType());
-        assertEquals("b", ((JsonString) ((JsonArray) obj.getValue("items")).getItem(1)).getValue());
+        assertEquals(2, obj.getValue("items").asArray().size());
+        assertEquals(ValueType.STRING, obj.getValue("items").asArray().getItem(0).getType());
+        assertEquals("a", obj.getValue("items").asArray().getItem(0).asString().getValue());
+        assertEquals(ValueType.STRING, obj.getValue("items").asArray().getItem(1).getType());
+        assertEquals("b", obj.getValue("items").asArray().getItem(1).asString().getValue());
         assertTrue(obj.containsValue("true"));
         assertEquals(ValueType.BOOLEAN, obj.getValue("true").getType());
-        assertEquals(false, ((JsonBoolean) obj.getValue("true")).getValue());
+        assertEquals(false, obj.getValue("true").asBoolean().getValue());
         assertTrue(obj.containsValue("???"));
         assertEquals(ValueType.NULL, obj.getValue("???").getType());
     }
@@ -266,22 +265,65 @@ public class DefaultJsonValueParserTest {
         assertEquals(4, obj.size());
         assertTrue(obj.containsValue("a"));
         assertEquals(ValueType.OBJECT, obj.getValue("a").getType());
-        assertEquals(3, ((JsonObject) obj.getValue("a")).size());
-        assertTrue(((JsonObject) obj.getValue("a")).containsValue("a1"));
-        assertEquals(ValueType.BOOLEAN, ((JsonObject) obj.getValue("a")).getValue("a1").getType());
-        assertEquals(true, ((JsonBoolean) ((JsonObject) obj.getValue("a")).getValue("a1")).getValue());
-        assertTrue(((JsonObject) obj.getValue("a")).containsValue("a2"));
-        assertEquals(ValueType.NUMBER, ((JsonObject) obj.getValue("a")).getValue("a2").getType());
-        assertEquals(4, ((JsonNumber) ((JsonObject) obj.getValue("a")).getValue("a2")).doubleValue());
-        assertTrue(((JsonObject) obj.getValue("a")).containsValue("a3"));
-        assertEquals(ValueType.OBJECT, ((JsonObject) obj.getValue("a")).getValue("a3").getType());
-        assertEquals(1, ((JsonObject) ((JsonObject) obj.getValue("a")).getValue("a3")).size());
-        assertTrue(((JsonObject) ((JsonObject) obj.getValue("a")).getValue("a3")).containsValue("aaaaaa"));
-        assertEquals(ValueType.NUMBER, ((JsonObject) ((JsonObject) obj.getValue("a")).getValue("a3")).getValue("aaaaaa").getType());
-        assertEquals(-10, ((JsonNumber) ((JsonObject) ((JsonObject) obj.getValue("a")).getValue("a3")).getValue("aaaaaa")).doubleValue());
+        assertEquals(3, obj.getValue("a").asObject().size());
+        assertTrue(obj.getValue("a").asObject().containsValue("a1"));
+        assertEquals(ValueType.BOOLEAN, obj.getValue("a").asObject().getValue("a1").getType());
+        assertEquals(true, obj.getValue("a").asObject().getValue("a1").asBoolean().getValue());
+        assertTrue(obj.getValue("a").asObject().containsValue("a2"));
+        assertEquals(ValueType.NUMBER, obj.getValue("a").asObject().getValue("a2").getType());
+        assertEquals(4, obj.getValue("a").asObject().getValue("a2").asNumber().doubleValue());
+        assertTrue(obj.getValue("a").asObject().containsValue("a3"));
+        assertEquals(ValueType.OBJECT, obj.getValue("a").asObject().getValue("a3").getType());
+        assertEquals(1, obj.getValue("a").asObject().getValue("a3").asObject().size());
+        assertTrue(obj.getValue("a").asObject().getValue("a3").asObject().containsValue("aaaaaa"));
+        assertEquals(ValueType.NUMBER, obj.getValue("a").asObject().getValue("a3").asObject().getValue("aaaaaa").getType());
+        assertEquals(-10, obj.getValue("a").asObject().getValue("a3").asObject().getValue("aaaaaa").asNumber().doubleValue());
         assertTrue(obj.containsValue("b"));
         assertEquals(ValueType.BOOLEAN, obj.getValue("b").getType());
-        assertEquals(true, ((JsonBoolean) obj.getValue("b")).getValue());
-        // todo: impossible to work with casts :)
+        assertEquals(true, obj.getValue("b").asBoolean().getValue());
+        assertTrue(obj.containsValue("c"));
+        assertEquals(ValueType.OBJECT, obj.getValue("c").getType());
+        assertEquals(3, obj.getValue("c").asObject().size());
+        assertTrue(obj.getValue("c").asObject().containsValue("ac"));
+        assertEquals(ValueType.OBJECT, obj.getValue("c").asObject().getValue("ac").getType());
+        assertEquals(2, obj.getValue("c").asObject().getValue("ac").asObject().size());
+        assertTrue(obj.getValue("c").asObject().getValue("ac").asObject().containsValue("result"));
+        assertEquals(ValueType.NUMBER, obj.getValue("c").asObject().getValue("ac").asObject().getValue("result").getType());
+        assertEquals(100, obj.getValue("c").asObject().getValue("ac").asObject().getValue("result").asNumber().doubleValue());
+        assertTrue(obj.getValue("c").asObject().getValue("ac").asObject().containsValue("response"));
+        assertEquals(ValueType.OBJECT, obj.getValue("c").asObject().getValue("ac").asObject().getValue("response").getType());
+        assertEquals(2, obj.getValue("c").asObject().getValue("ac").asObject().getValue("response").asObject().size());
+        assertTrue(obj.getValue("c").asObject().getValue("ac").asObject().getValue("response").asObject().containsValue("list"));
+        assertEquals(ValueType.ARRAY, obj.getValue("c").asObject().getValue("ac").asObject().getValue("response").asObject().getValue("list").getType());
+        assertEquals(0, obj.getValue("c").asObject().getValue("ac").asObject().getValue("response").asObject().getValue("list").asArray().size());
+        assertTrue(obj.getValue("c").asObject().getValue("ac").asObject().getValue("response").asObject().containsValue("x"));
+        assertEquals(ValueType.OBJECT, obj.getValue("c").asObject().getValue("ac").asObject().getValue("response").asObject().getValue("x").getType());
+        assertEquals(1, obj.getValue("c").asObject().getValue("ac").asObject().getValue("response").asObject().getValue("x").asObject().size());
+        assertTrue(obj.getValue("c").asObject().getValue("ac").asObject().getValue("response").asObject().getValue("x").asObject().containsValue("y"));
+        assertEquals(ValueType.OBJECT, obj.getValue("c").asObject().getValue("ac").asObject().getValue("response").asObject().getValue("x").asObject().getValue("y").getType());
+        assertEquals(1, obj.getValue("c").asObject().getValue("ac").asObject().getValue("response").asObject().getValue("x").asObject().getValue("y").asObject().size());
+        assertTrue(obj.getValue("c").asObject().getValue("ac").asObject().getValue("response").asObject().getValue("x").asObject().getValue("y").asObject().containsValue("z"));
+        assertEquals(ValueType.STRING, obj.getValue("c").asObject().getValue("ac").asObject().getValue("response").asObject().getValue("x").asObject().getValue("y").asObject().getValue("z").getType());
+        assertEquals("???", obj.getValue("c").asObject().getValue("ac").asObject().getValue("response").asObject().getValue("x").asObject().getValue("y").asObject().getValue("z").asString().getValue());
+        assertTrue(obj.getValue("c").asObject().containsValue("bc"));
+        assertEquals(ValueType.NUMBER, obj.getValue("c").asObject().getValue("bc").getType());
+        assertEquals(300, obj.getValue("c").asObject().getValue("bc").asNumber().doubleValue());
+        assertTrue(obj.getValue("c").asObject().containsValue("cc"));
+        assertEquals(ValueType.OBJECT, obj.getValue("c").asObject().getValue("cc").getType());
+        assertTrue(obj.getValue("c").asObject().getValue("cc").asObject().containsValue("acc"));
+        assertEquals(1, obj.getValue("c").asObject().getValue("cc").asObject().getValue("acc").asObject().size());
+        assertTrue(obj.getValue("c").asObject().getValue("cc").asObject().getValue("acc").asObject().containsValue("1"));
+        assertEquals(ValueType.ARRAY, obj.getValue("c").asObject().getValue("cc").asObject().getValue("acc").asObject().getValue("1").getType());
+        assertEquals(2, obj.getValue("c").asObject().getValue("cc").asObject().getValue("acc").asObject().getValue("1").asArray().size());
+        assertEquals(ValueType.NUMBER, obj.getValue("c").asObject().getValue("cc").asObject().getValue("acc").asObject().getValue("1").asArray().getItem(0).getType());
+        assertEquals(2, obj.getValue("c").asObject().getValue("cc").asObject().getValue("acc").asObject().getValue("1").asArray().getItem(0).asNumber().doubleValue());
+        assertEquals(ValueType.NUMBER, obj.getValue("c").asObject().getValue("cc").asObject().getValue("acc").asObject().getValue("1").asArray().getItem(1).getType());
+        assertEquals(3, obj.getValue("c").asObject().getValue("cc").asObject().getValue("acc").asObject().getValue("1").asArray().getItem(1).asNumber().doubleValue());
+        assertTrue(obj.getValue("c").asObject().getValue("cc").asObject().containsValue("null"));
+        assertEquals(ValueType.OBJECT, obj.getValue("c").asObject().getValue("cc").asObject().getValue("null").getType());
+        assertEquals(0, obj.getValue("c").asObject().getValue("cc").asObject().getValue("null").asObject().size());
+        assertTrue(obj.containsValue("d"));
+        assertEquals(ValueType.OBJECT, obj.getValue("d").getType());
+        assertEquals(0, obj.getValue("d").asObject().size());
     }
 }
