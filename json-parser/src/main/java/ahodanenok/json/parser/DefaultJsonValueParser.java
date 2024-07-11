@@ -7,7 +7,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import ahodanenok.json.parser.tokenizer.DefaultJsonTokenizer;
-import ahodanenok.json.parser.tokenizer.JsonParseState;
 import ahodanenok.json.parser.tokenizer.JsonToken;
 import ahodanenok.json.parser.tokenizer.JsonTokenizer;
 import ahodanenok.json.parser.tokenizer.TokenType;
@@ -31,8 +30,14 @@ public final class DefaultJsonValueParser implements JsonValueParser {
     public JsonValue readValue(Reader reader) {
         // todo: how to customize a tokenizer? maybe with a factory?
         JsonTokenizer tokenizer = new DefaultJsonTokenizer(reader);
+        JsonValue value = readValue(tokenizer, true);
+        if (tokenizer.advance()) {
+            throw new JsonParseException(
+                String.format("Unexpected token '%s' after the value", tokenizer.currentToken().getRepresentation()),
+                tokenizer.halt());
+        }
 
-        return readValue(tokenizer, true);
+        return value;
     }
 
     private JsonValue readValue(JsonTokenizer tokenizer, boolean advance) {
@@ -60,8 +65,6 @@ public final class DefaultJsonValueParser implements JsonValueParser {
                 String.format("Unexpected token '%s'", token.getRepresentation()),
                 tokenizer.halt());
         }
-
-        // todo: check no tokens left
     }
 
     private JsonArray readArray(JsonTokenizer tokenizer) {

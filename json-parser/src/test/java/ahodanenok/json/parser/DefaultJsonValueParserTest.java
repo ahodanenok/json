@@ -8,11 +8,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import ahodanenok.json.value.JsonArray;
-import ahodanenok.json.value.JsonBoolean;
-import ahodanenok.json.value.JsonNull;
-import ahodanenok.json.value.JsonNumber;
 import ahodanenok.json.value.JsonObject;
-import ahodanenok.json.value.JsonString;
 import ahodanenok.json.value.JsonValue;
 import ahodanenok.json.value.ValueType;
 
@@ -23,6 +19,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DefaultJsonValueParserTest {
+
+    @Test
+    public void testErrorWhenMultipleValues() {
+        JsonValueParser parser = new DefaultJsonValueParser();
+        JsonParseException e = assertThrows(
+            JsonParseException.class, () -> parser.readValue(new StringReader("300 true")));
+        assertEquals("Unexpected token 'true' after the value", e.getMessage());
+    }
 
     @Test
     public void testParseNoContent() {
