@@ -90,7 +90,7 @@ public final class DefaultJsonTokenizer implements JsonTokenizer {
             token = new JsonStringToken(TokenType.STRING, readString());
         } else {
             reader.unread(ch);
-            token = new JsonDoubleToken(TokenType.NUMBER, readNumber());
+            token = readNumber();
         }
 
         return true;
@@ -172,7 +172,7 @@ public final class DefaultJsonTokenizer implements JsonTokenizer {
     }
 
     // todo: config for reading as double/bigdecimal?
-    private double readNumber() throws IOException {
+    private JsonToken readNumber() throws IOException {
         buf.clear();
 
         int ch;
@@ -218,7 +218,10 @@ public final class DefaultJsonTokenizer implements JsonTokenizer {
 
         try {
             // todo: implement https://datatracker.ietf.org/doc/html/rfc8259#section-6
-            return Double.parseDouble(buf.flip().toString());
+            String representation = buf.flip().toString();
+            double number = Double.parseDouble(representation);
+
+            return new JsonDoubleToken(TokenType.NUMBER, number, representation);
         } catch (NumberFormatException e) {
             JsonParseState state = halt();
             throw new JsonParseException(

@@ -323,7 +323,8 @@ public class DefaultJsonTokenizerTest {
     @CsvSource({
         "abc, abc",
         "hello-world, hello-w...",
-        "True, True", "False, False",
+        "True, True",
+        "False, False",
         "Null, Null",
         "=12345678, =123456...",
         "check\": \"abc\", check\":..."

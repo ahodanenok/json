@@ -13,4 +13,9 @@ final class JsonStringToken extends JsonToken  {
     public String stringValue() {
         return value;
     }
+
+    @Override
+    public String getRepresentation() {
+        return "\"" + value + "\"";
+    }
 }

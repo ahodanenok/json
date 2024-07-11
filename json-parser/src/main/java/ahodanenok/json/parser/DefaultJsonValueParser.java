@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import ahodanenok.json.parser.tokenizer.DefaultJsonTokenizer;
+import ahodanenok.json.parser.tokenizer.JsonParseState;
 import ahodanenok.json.parser.tokenizer.JsonToken;
 import ahodanenok.json.parser.tokenizer.JsonTokenizer;
 import ahodanenok.json.parser.tokenizer.TokenType;
@@ -36,7 +37,7 @@ public final class DefaultJsonValueParser implements JsonValueParser {
 
     private JsonValue readValue(JsonTokenizer tokenizer, boolean advance) {
         if (advance && !tokenizer.advance()) {
-            return null; // todo: exception?
+            return null;
         }
 
         JsonToken token = tokenizer.currentToken();
@@ -55,34 +56,33 @@ public final class DefaultJsonValueParser implements JsonValueParser {
         } else if (token.getType().equals(TokenType.BEGIN_OBJECT)) {
             return readObject(tokenizer);
         } else {
-            // todo: throw JsonParseException
-            throw new IllegalStateException("Unknown token: " + token.getType());
+            throw new JsonParseException(
+                String.format("Unexpected token '%s'", token.getRepresentation()),
+                tokenizer.halt());
         }
+
+        // todo: check no tokens left
     }
 
     private JsonArray readArray(JsonTokenizer tokenizer) {
         List<JsonValue> items = new ArrayList<>();
         while (true) {
             if (!tokenizer.advance()) {
-                // todo: throw JsonParseException
-                throw new IllegalStateException("Unexpected end of the array");
+                throw new JsonParseException("Unexpected end of an array", tokenizer.halt());
             }
 
             JsonToken token = tokenizer.currentToken();
             if (token.getType().equals(TokenType.END_ARRAY)) {
                 break;
             } else if (!items.isEmpty() && !token.getType().equals(TokenType.VALUE_SEPARATOR)) {
-                // todo: throw JsonParseException
-                throw new IllegalStateException(String.format(
-                    "Expected '%s' but '%s' was encountered",
-                    TokenType.VALUE_SEPARATOR,
-                    tokenizer.currentToken().getType()));
+                throw new JsonParseException(
+                    String.format("Expected ',' but '%s' was encountered", token.getRepresentation()),
+                    tokenizer.halt());
             }
 
             JsonValue item = readValue(tokenizer, !items.isEmpty());
             if (item == null) {
-                // todo: throw JsonParseException
-                throw new IllegalStateException("Unexpected end of the array");
+                throw new JsonParseException("Unexpected end of an array", tokenizer.halt());
             }
 
             items.add(item);
@@ -95,8 +95,7 @@ public final class DefaultJsonValueParser implements JsonValueParser {
         Map<String, JsonValue> values = new LinkedHashMap<>();
         while (true) {
             if (!tokenizer.advance()) {
-                // todo: throw JsonParseException
-                throw new IllegalStateException("Unexpected end of an object");
+                throw new JsonParseException("Unexpected end of an object", tokenizer.halt());
             }
 
             JsonToken token = tokenizer.currentToken();
@@ -106,40 +105,39 @@ public final class DefaultJsonValueParser implements JsonValueParser {
 
             if (!values.isEmpty()) {
                 if (!token.getType().equals(TokenType.VALUE_SEPARATOR)) {
-                    // todo: throw JsonParseException
-                    throw new IllegalStateException(String.format(
-                        "Expected '%s' but '%s' was encountered",
-                        TokenType.VALUE_SEPARATOR,
-                        tokenizer.currentToken().getType()));
+                    throw new JsonParseException(
+                        String.format("Expected ',' but '%s' was encountered", token.getRepresentation()),
+                        tokenizer.halt());
                 }
 
                 if (!tokenizer.advance()) {
-                    // todo: throw JsonParseException
-                    throw new IllegalStateException("Unexpected end of an object");
+                    throw new JsonParseException("Unexpected end of an object", tokenizer.halt());
                 }
             }
 
             token = tokenizer.currentToken();
             if (!token.getType().equals(TokenType.STRING)) {
-                throw new IllegalStateException("Name expected, but was: " + token.getType());
+                throw new JsonParseException(
+                    String.format("Expected name, but '%s' was encountered", token.getRepresentation()),
+                    tokenizer.halt());
             }
 
             String name = token.stringValue();
 
             if (!tokenizer.advance()) {
-                // todo: throw JsonParseException
-                throw new IllegalStateException("Unexpected end of an object");
+                throw new JsonParseException("Unexpected end of an object", tokenizer.halt());
             }
 
-            if (!tokenizer.currentToken().getType().equals(TokenType.NAME_SEPARATOR)) {
-                // todo: throw JsonParseException
-                throw new IllegalStateException("Unexpected token after name");
+            token = tokenizer.currentToken();
+            if (!token.getType().equals(TokenType.NAME_SEPARATOR)) {
+                throw new JsonParseException(
+                    String.format("Expected ':', but '%s' was encountered", token.getRepresentation()),
+                    tokenizer.halt());
             }
 
             JsonValue value = readValue(tokenizer, true);
             if (value == null) {
-                // todo: throw JsonParseException
-                throw new IllegalStateException("Unexpected end of an object");
+                throw new JsonParseException("Unexpected end of an object", tokenizer.halt());
             }
 
             // todo: strategy for handling duplicate names
