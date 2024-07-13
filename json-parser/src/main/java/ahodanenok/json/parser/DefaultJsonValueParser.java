@@ -18,18 +18,22 @@ import ahodanenok.json.value.JsonObject;
 import ahodanenok.json.value.JsonString;
 import ahodanenok.json.value.JsonValue;
 
+// todo: truncate representations in errors
 public final class DefaultJsonValueParser implements JsonValueParser {
 
-    // todo: config
+    private final JsonParserConfig config;
 
     public DefaultJsonValueParser() {
+        this(new JsonParserConfig());
+    }
 
+    public DefaultJsonValueParser(JsonParserConfig config) {
+        this.config = config;
     }
 
     @Override
     public JsonValue readValue(Reader reader) {
-        // todo: how to customize a tokenizer? maybe with a factory?
-        JsonTokenizer tokenizer = new DefaultJsonTokenizer(reader);
+        JsonTokenizer tokenizer = new DefaultJsonTokenizer(reader, config.tokenizerConfig);
         JsonValue value = readValue(tokenizer, true);
         if (tokenizer.advance()) {
             throw new JsonParseException(

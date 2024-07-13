@@ -10,6 +10,8 @@ import ahodanenok.json.parser.JsonParseException;
 public final class DefaultJsonTokenizer implements JsonTokenizer {
 
     private final PushbackReader reader;
+    private final JsonTokenizerConfig config;
+
     private JsonToken token;
     private CharBuffer buf;
 
@@ -20,8 +22,13 @@ public final class DefaultJsonTokenizer implements JsonTokenizer {
     private boolean halted;
 
     public DefaultJsonTokenizer(Reader reader) {
+        this(reader, new JsonTokenizerConfig());
+    }
+
+    public DefaultJsonTokenizer(Reader reader, JsonTokenizerConfig config) {
         // todo: check if already pushback
         this.reader = new PushbackReader(reader, 1);
+        this.config = config;
         this.buf = CharBuffer.allocate(128); // todo: configuratble initial capacity?
     }
 
