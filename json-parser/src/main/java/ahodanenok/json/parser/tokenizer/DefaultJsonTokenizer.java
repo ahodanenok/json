@@ -103,6 +103,18 @@ public final class DefaultJsonTokenizer implements JsonTokenizer {
             || ch == 0xD; // Carriage return
     }
 
+    private int convertHexDigit(int ch) {
+        if (ch >= '0' && ch <= '9') {
+            return ch - '0';
+        } else if (ch >= 'a' && ch <= 'f') {
+            return 10 + (ch - 'a');
+        } else if (ch >= 'A' && ch <= 'F') {
+            return 10 + (ch - 'A');
+        } else {
+            return -1;
+        }
+    }
+
     private void updateLocation(int ch) {
         if (ch == -1) {
             return;
@@ -137,38 +149,137 @@ public final class DefaultJsonTokenizer implements JsonTokenizer {
         }
     }
 
-    // todo: implement escapes
     private String readString() throws IOException {
         buf.clear();
 
         int ch;
         while (true) {
             ch = reader.read();
-            // todo: throw an error if a control character is encountered (x00-x1F)
             updateLocation(ch);
             if (ch == -1 || ch == 0x22) {
                 break;
+            }
+
+            if (ch < 0x20) {
+                // todo: readable names for control charcters
+                throw new JsonParseException(String.format("Control charcter '0x%X' must be escaped", ch), halt());
             }
 
             if (buf.remaining() == 0) {
                 // todo: configurable string size limit?
                 expandBuf();
                 if (buf.remaining() == 0) {
-                    JsonParseState state = halt();
-                    throw new JsonParseException("String is too long", state);
+                    throw new JsonParseException("String is too long", halt());
                 }
             }
 
-            buf.put((char) ch);
+            if (ch == '\\') {
+                ch = reader.read();
+                updateLocation(ch);
+                if (ch == -1) {
+                    throw new JsonParseException(
+                        "Unexpected end of the string while reading an escape sequence",
+                        halt());
+                }
+
+                if (ch == '"') {
+                    buf.put((char) ch);
+                } else if (ch == '\\') {
+                    buf.put((char) ch);
+                } else if (ch == '/') {
+                    buf.put((char) ch);
+                } else if (ch == 'b') {
+                    buf.put('\b');
+                } else if (ch == 'f') {
+                    buf.put('\f');
+                } else if (ch == 'n') {
+                    buf.put('\n');
+                } else if (ch == 'r') {
+                    buf.put('\r');
+                } else if (ch == 't') {
+                    buf.put('\t');
+                } else if (ch == 'u') {
+                    int uc = readUnicodeCharCode();
+                    buf.put((char) uc);
+                    if (uc >= Character.MIN_HIGH_SURROGATE && uc <= Character.MAX_HIGH_SURROGATE) {
+                        ch = reader.read();
+                        updateLocation(ch);
+                        if (ch == -1) {
+                            throw new JsonParseException(
+                                "Unexpected end of the string while reading an escape sequence",
+                                halt());
+                        } else if (ch != '\\') {
+                            throw new JsonParseException(
+                                String.format("Unexpected character '%c' while a unicode escape sequence was expected", ch),
+                                halt());
+                        }
+
+                        ch = reader.read();
+                        updateLocation(ch);
+                        if (ch == -1) {
+                            throw new JsonParseException(
+                                "Unexpected end of the string while reading an escape sequence",
+                                halt());
+                        } else if (ch != 'u') {
+                            throw new JsonParseException(
+                                String.format("Unexpected character '%c' while a unicode escape sequence was expected", ch),
+                                halt());
+                        }
+
+                        uc = readUnicodeCharCode();
+                        if (uc < Character.MIN_LOW_SURROGATE || uc > Character.MAX_LOW_SURROGATE) {
+                            throw new JsonParseException(
+                                String.format("Incorrect unicode escape sequence: high surrogate"
+                                    + " must be followed by a low surrogate but '\\u%4X' was encountered", uc),
+                                halt());
+                        }
+
+                        buf.put((char) uc);
+                    }
+                } else {
+                    throw new JsonParseException(String.format("Unsupported escape sequence '\\%c'", ch), halt());
+                }
+            } else {
+                buf.put((char) ch);
+            }
         }
 
         if (ch == -1) {
-            JsonParseState state = halt();
             throw new JsonParseException(
-                "Unexpected end of the string, must be terminated with a double quote", state);
+                "Unexpected end of the string, must be terminated with a double quote",
+                halt());
         }
 
         return buf.flip().toString();
+    }
+
+    private int readUnicodeCharCode() throws IOException {
+        int ch;
+        int uc = 0;
+        int hd;
+        for (int i = 3; i >= 0; i--) {
+            ch = reader.read();
+            updateLocation(ch);
+            if (ch == -1) {
+                throw new JsonParseException(
+                    "Unexpected end of the string while reading an escape sequence",
+                    halt());
+            }
+
+            hd = convertHexDigit(ch);
+            if (hd == -1) {
+                throw new JsonParseException(
+                    String.format("Incorrect unicode escape sequence: '%c' is not a hex digit", ch),
+                    halt());
+            }
+
+            uc = uc | hd;
+            if (i > 0) {
+                uc <<= 4;
+            }
+        }
+
+        return uc;
     }
 
     // todo: config for reading as double/bigdecimal?

@@ -220,6 +220,152 @@ public class DefaultJsonTokenizerTest {
     }
 
     @ParameterizedTest
+    @CsvSource(textBlock = """
+        "\\"a\\"b\\"c\\"",     \"a\"b\"c\"
+        "\\\\a\\\\b\\\\c\\\\",     \\a\\b\\c\\
+        "\\/a\\/b\\/c\\/",     /a/b/c/
+        "\\bX\\bY\\bZ\\b",     '\bX\bY\bZ\b'
+        "\\fX\\fY\\fZ\\f",     '\fX\fY\fZ\f'
+        "\\nX\\nY\\nZ\\n",     '\nX\nY\nZ\n'
+        "\\rX\\rY\\rZ\\r",     '\rX\rY\rZ\r'
+        "\\tX\\tY\\tZ\\t",     '\tX\tY\tZ\t'
+        "\\"\\\\\\/\\b\\f\\n\\r\\t",     '\"\\/\b\f\n\r\t'
+        "=\\"=\\\\=\\/=\\b=\\f=\\n=\\r=\\t=",     '=\"=\\=/=\b=\f=\n=\r=\t='
+    """)
+    public void testReadStringWithEscapes(String s, String expected) {
+        DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader(s));
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.STRING, tokenizer.currentToken().getType());
+        assertEquals(expected, tokenizer.currentToken().stringValue());
+    }
+
+    @ParameterizedTest
+    @CsvSource(textBlock = """
+        "\\u2160\\uFE10\\uab35",     '\u2160\uFE10\uab35'
+        "A\\u3a5CB\\uefA0C\\u0012D",     'A\u3A5CB\uEFA0C\u0012D'
+    """)
+    public void testReadStringWithUnicodeEscape(String s, String expected) {
+        DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader(s));
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.STRING, tokenizer.currentToken().getType());
+        assertEquals(expected, tokenizer.currentToken().stringValue());
+    }
+
+    @ParameterizedTest
+    @CsvSource(textBlock = """
+        \"A=\\uD801\\uDC37+D\",     'A=\uD801\uDC37+D'
+        \"\\uD852\\uDF62\",     '\uD852\uDF62'
+    """)
+    public void testReadStringWithSurrogates(String s, String expected) {
+        DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader(s));
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.STRING, tokenizer.currentToken().getType());
+        assertEquals(expected, tokenizer.currentToken().stringValue());
+    }
+
+    @Test
+    public void testReadStringIgnoreEscapedUnicodeEscape() {
+        DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader("\"\\\\uD2B1--\\\\uABCD--\\\\u1234\""));
+        assertTrue(tokenizer.advance());
+        assertEquals(TokenType.STRING, tokenizer.currentToken().getType());
+        assertEquals("\\uD2B1--\\uABCD--\\u1234", tokenizer.currentToken().stringValue());
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "\"AB\\c\",     \\c",
+        "\"3\\21\",     \\2",
+        "\"\\U1234\",     \\U"
+    })
+    public void testReadStringErrorWhenUnsupportedEscape(String s, String expected) {
+        DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader(s));
+        JsonParseException e = assertThrows(JsonParseException.class, () -> tokenizer.advance());
+        assertEquals(String.format("Unsupported escape sequence '%s'", expected), e.getMessage());
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "\"\u0000\",     0x0",
+        "\"\u0001\",     0x1",
+        "\"\u0002\",     0x2",
+        "\"\u0003\",     0x3",
+        "\"\u0004\",     0x4",
+        "\"\u0005\",     0x5",
+        "\"\u0006\",     0x6",
+        "\"\u0007\",     0x7",
+        "\"\u0008\",     0x8",
+        "\"\u0009\",     0x9",
+        "'\"\n\"',       0xA",
+        "\"\u000B\",     0xB",
+        "\"\u000C\",     0xC",
+        "'\"\r\"',       0xD",
+        "\"\u000E\",     0xE",
+        "\"\u000F\",     0xF",
+        "\"\u0010\",     0x10",
+        "\"\u0011\",     0x11",
+        "\"\u0012\",     0x12",
+        "\"\u0013\",     0x13",
+        "\"\u0014\",     0x14",
+        "\"\u0015\",     0x15",
+        "\"\u0016\",     0x16",
+        "\"\u0017\",     0x17",
+        "\"\u0018\",     0x18",
+        "\"\u0019\",     0x19",
+        "\"\u001A\",     0x1A",
+        "\"\u001B\",     0x1B",
+        "\"\u001C\",     0x1C",
+        "\"\u001D\",     0x1D",
+        "\"\u001E\",     0x1E",
+        "\"\u001F\",     0x1F"
+    })
+    public void testReadStringErrorWhenUnescapedControlCharacter(String s, String expected) {
+        DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader(s));
+        JsonParseException e = assertThrows(JsonParseException.class, () -> tokenizer.advance());
+        assertEquals(String.format("Control charcter '%s' must be escaped", expected), e.getMessage());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "\"abc\\",
+        "\"=\\uABC",
+        "\"\\uD852\\uDF6",
+        "\"\\uD852\\uDF",
+        "\"\\uD852\\uD",
+        "\"\\uD852\\u",
+        "\"\\uD852\\",
+        "\"\\uD852"
+    })
+    public void testReadStringErrorWhenEscapeUnfinished(String s) {
+        DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader(s));
+        JsonParseException e = assertThrows(JsonParseException.class, () -> tokenizer.advance());
+        assertEquals("Unexpected end of the string while reading an escape sequence", e.getMessage());
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "\"\\uABCH\",     H",
+        "\"\\u01ZD\",     Z",
+        "\"\\ub!23\",     !",
+        "\"\\un234\",     n"
+    })
+    public void testReadStringErrorWhenNotHexDigitInUnicodeEscape(String s, String expected) {
+        DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader(s));
+        JsonParseException e = assertThrows(JsonParseException.class, () -> tokenizer.advance());
+        assertEquals(String.format("Incorrect unicode escape sequence: '%s' is not a hex digit", expected), e.getMessage());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "\"\\uD852\\\"",
+        "\"\\uD852\""
+    })
+    public void testReadStringErrorWhenUnexpectedCharacterInLowSurrogate(String s) {
+        DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader(s));
+        JsonParseException e = assertThrows(JsonParseException.class, () -> tokenizer.advance());
+        assertEquals("Unexpected character '\"' while a unicode escape sequence was expected", e.getMessage());
+    }
+
+    @ParameterizedTest
     @ValueSource(strings = { "\"", "\"abc", "\"hello world" })
     public void testErrorWhenStringNotTerminated(String s) {
         DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader(s));
