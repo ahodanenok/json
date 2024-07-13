@@ -392,4 +392,129 @@ public class DefaultJsonValueParserTest {
         assertEquals(ValueType.OBJECT, obj.getValue("d").getType());
         assertEquals(0, obj.getValue("d").asObject().size());
     }
+
+    @Test
+    public void testParseRfcExample_1() {
+        JsonValueParser parser = new DefaultJsonValueParser();
+        JsonValue value = parser.readValue(new StringReader("""
+            {
+                \"Image\": {
+                    \"Width\":  800,
+                    \"Height\": 600,
+                    \"Title\":  \"View from 15th Floor\",
+                    \"Thumbnail\": {
+                        \"Url\":    \"http://www.example.com/image/481989943\",
+                        \"Height\": 125,
+                        \"Width\":  100
+                    },
+                    \"Animated\" : false,
+                    \"IDs\": [116, 943, 234, 38793]
+                }
+            }
+        """));
+        assertEquals(ValueType.OBJECT, value.getType());
+        JsonObject obj = value.asObject();
+        assertEquals(1, obj.size());
+        assertTrue(obj.containsValue("Image"));
+        assertTrue(!obj.containsValue("image"));
+        assertEquals(ValueType.OBJECT, obj.getValue("Image").getType());
+        assertEquals(6, obj.getValue("Image").asObject().size());
+        assertEquals(ValueType.NUMBER, obj.getValue("Image").asObject().getValue("Width").getType());
+        assertEquals(800, obj.getValue("Image").asObject().getValue("Width").asNumber().doubleValue());
+        assertEquals(ValueType.NUMBER, obj.getValue("Image").asObject().getValue("Height").getType());
+        assertEquals(600, obj.getValue("Image").asObject().getValue("Height").asNumber().doubleValue());
+        assertEquals(ValueType.STRING, obj.getValue("Image").asObject().getValue("Title").getType());
+        assertEquals("View from 15th Floor", obj.getValue("Image").asObject().getValue("Title").asString().getValue());
+        assertEquals(ValueType.BOOLEAN, obj.getValue("Image").asObject().getValue("Animated").getType());
+        assertEquals(false, obj.getValue("Image").asObject().getValue("Animated").asBoolean().getValue());
+        assertEquals(ValueType.ARRAY, obj.getValue("Image").asObject().getValue("IDs").getType());
+        assertEquals(4, obj.getValue("Image").asObject().getValue("IDs").asArray().size());
+        assertEquals(ValueType.NUMBER, obj.getValue("Image").asObject().getValue("IDs").asArray().getItem(0).getType());
+        assertEquals(116, obj.getValue("Image").asObject().getValue("IDs").asArray().getItem(0).asNumber().doubleValue());
+        assertEquals(ValueType.NUMBER, obj.getValue("Image").asObject().getValue("IDs").asArray().getItem(1).getType());
+        assertEquals(943, obj.getValue("Image").asObject().getValue("IDs").asArray().getItem(1).asNumber().doubleValue());
+        assertEquals(ValueType.NUMBER, obj.getValue("Image").asObject().getValue("IDs").asArray().getItem(2).getType());
+        assertEquals(234, obj.getValue("Image").asObject().getValue("IDs").asArray().getItem(2).asNumber().doubleValue());
+        assertEquals(ValueType.NUMBER, obj.getValue("Image").asObject().getValue("IDs").asArray().getItem(3).getType());
+        assertEquals(38793, obj.getValue("Image").asObject().getValue("IDs").asArray().getItem(3).asNumber().doubleValue());
+        assertEquals(ValueType.OBJECT, obj.getValue("Image").asObject().getValue("Thumbnail").getType());
+        assertEquals(3, obj.getValue("Image").asObject().getValue("Thumbnail").asObject().size());
+        assertEquals(ValueType.STRING, obj.getValue("Image").asObject().getValue("Thumbnail").asObject().getValue("Url").getType());
+        assertEquals("http://www.example.com/image/481989943", obj.getValue("Image").asObject().getValue("Thumbnail").asObject().getValue("Url").asString().getValue());
+        assertEquals(ValueType.NUMBER, obj.getValue("Image").asObject().getValue("Thumbnail").asObject().getValue("Height").getType());
+        assertEquals(125, obj.getValue("Image").asObject().getValue("Thumbnail").asObject().getValue("Height").asNumber().doubleValue());
+        assertEquals(ValueType.NUMBER, obj.getValue("Image").asObject().getValue("Thumbnail").asObject().getValue("Width").getType());
+        assertEquals(100, obj.getValue("Image").asObject().getValue("Thumbnail").asObject().getValue("Width").asNumber().doubleValue());
+    }
+
+    @Test
+    public void testParseRfcExample_2() {
+        JsonValueParser parser = new DefaultJsonValueParser();
+        JsonValue value = parser.readValue(new StringReader("""
+            [
+                {
+                    \"precision\": \"zip\",
+                    \"Latitude\":  37.7668,
+                    \"Longitude\": -122.3959,
+                    \"Address\":   \"\",
+                    \"City\":      \"SAN FRANCISCO\",
+                    \"State\":     \"CA\",
+                    \"Zip\":       \"94107\",
+                    \"Country\":   \"US\"
+                },
+                {
+                    \"precision\": \"zip\",
+                    \"Latitude\":  37.371991,
+                    \"Longitude\": -122.026020,
+                    \"Address\":   \"\",
+                    \"City\":      \"SUNNYVALE\",
+                    \"State\":     \"CA\",
+                    \"Zip\":       \"94085\",
+                    \"Country\":   \"US\"
+                }
+            ]
+        """));
+
+        assertEquals(ValueType.ARRAY, value.getType());
+        JsonArray array = value.asArray();
+        assertEquals(2, array.size());
+
+        assertEquals(ValueType.OBJECT, array.getItem(0).getType());
+        assertEquals(8, array.getItem(0).asObject().size());
+        assertEquals(ValueType.STRING, array.getItem(0).asObject().getValue("precision").getType());
+        assertEquals("zip", array.getItem(0).asObject().getValue("precision").asString().getValue());
+        assertEquals(ValueType.NUMBER, array.getItem(0).asObject().getValue("Latitude").getType());
+        assertEquals(37.7668, array.getItem(0).asObject().getValue("Latitude").asNumber().doubleValue());
+        assertEquals(ValueType.NUMBER, array.getItem(0).asObject().getValue("Longitude").getType());
+        assertEquals(-122.3959, array.getItem(0).asObject().getValue("Longitude").asNumber().doubleValue());
+        assertEquals(ValueType.STRING, array.getItem(0).asObject().getValue("Address").getType());
+        assertEquals("", array.getItem(0).asObject().getValue("Address").asString().getValue());
+        assertEquals(ValueType.STRING, array.getItem(0).asObject().getValue("City").getType());
+        assertEquals("SAN FRANCISCO", array.getItem(0).asObject().getValue("City").asString().getValue());
+        assertEquals(ValueType.STRING, array.getItem(0).asObject().getValue("State").getType());
+        assertEquals("CA", array.getItem(0).asObject().getValue("State").asString().getValue());
+        assertEquals(ValueType.STRING, array.getItem(0).asObject().getValue("Zip").getType());
+        assertEquals("94107", array.getItem(0).asObject().getValue("Zip").asString().getValue());
+        assertEquals(ValueType.STRING, array.getItem(0).asObject().getValue("Country").getType());
+        assertEquals("US", array.getItem(0).asObject().getValue("Country").asString().getValue());
+        assertEquals(ValueType.OBJECT, array.getItem(0).getType());
+
+        assertEquals(8, array.getItem(1).asObject().size());
+        assertEquals(ValueType.STRING, array.getItem(1).asObject().getValue("precision").getType());
+        assertEquals("zip", array.getItem(1).asObject().getValue("precision").asString().getValue());
+        assertEquals(ValueType.NUMBER, array.getItem(1).asObject().getValue("Latitude").getType());
+        assertEquals(37.371991, array.getItem(1).asObject().getValue("Latitude").asNumber().doubleValue());
+        assertEquals(ValueType.NUMBER, array.getItem(1).asObject().getValue("Longitude").getType());
+        assertEquals(-122.026020, array.getItem(1).asObject().getValue("Longitude").asNumber().doubleValue());
+        assertEquals(ValueType.STRING, array.getItem(1).asObject().getValue("Address").getType());
+        assertEquals("", array.getItem(1).asObject().getValue("Address").asString().getValue());
+        assertEquals(ValueType.STRING, array.getItem(1).asObject().getValue("City").getType());
+        assertEquals("SUNNYVALE", array.getItem(1).asObject().getValue("City").asString().getValue());
+        assertEquals(ValueType.STRING, array.getItem(1).asObject().getValue("State").getType());
+        assertEquals("CA", array.getItem(1).asObject().getValue("State").asString().getValue());
+        assertEquals(ValueType.STRING, array.getItem(1).asObject().getValue("Zip").getType());
+        assertEquals("94085", array.getItem(1).asObject().getValue("Zip").asString().getValue());
+        assertEquals(ValueType.STRING, array.getItem(1).asObject().getValue("Country").getType());
+        assertEquals("US", array.getItem(1).asObject().getValue("Country").asString().getValue());
+    }
 }
