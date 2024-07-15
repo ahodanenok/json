@@ -3,19 +3,18 @@ package ahodanenok.json.parser.pull;
 import java.io.Reader;
 
 import ahodanenok.json.parser.tokenizer.DefaultJsonTokenizer;
+import ahodanenok.json.parser.tokenizer.JsonToken;
 import ahodanenok.json.parser.tokenizer.JsonTokenizer;
 import ahodanenok.json.parser.tokenizer.TokenType;
 
 public final class DefaultJsonStreamingParser implements JsonStreamingParser {
 
     private final JsonTokenizer tokenizer;
-    // private final Reader reader;
 
     private EventType event;
 
     public DefaultJsonStreamingParser(Reader reader) {
         this.tokenizer = new DefaultJsonTokenizer(reader);
-        // this.reader = reader;
     }
 
     @Override
@@ -24,9 +23,25 @@ public final class DefaultJsonStreamingParser implements JsonStreamingParser {
             return false;
         }
 
-        // todo: determine event, skip tokens as needed
+        JsonToken token = tokenizer.currentToken();
+        if (token.getType().equals(TokenType.STRING)) {
+            event = EventType.STRING;
+        } else if (token.getType().equals(TokenType.NUMBER)) {
+            event = EventType.NUMBER;
+        } else if (token.getType().equals(TokenType.NULL)) {
+            event = EventType.NULL;
+        } else if (token.getType().equals(TokenType.TRUE)) {
+            event = EventType.BOOLEAN;
+        } else if (token.getType().equals(TokenType.FALSE)) {
+            event = EventType.BOOLEAN;
+        } else {
+            // todo: custom exception?
+            throw new IllegalStateException(token.getType().name());
+        }
 
-        return false;
+        // todo: throw error if multiple values at the root
+
+        return true;
     }
 
     @Override
@@ -66,6 +81,6 @@ public final class DefaultJsonStreamingParser implements JsonStreamingParser {
 
     @Override
     public boolean isNull() {
-        return tokenizer.currentToken().getType() == TokenType.NULL;
+        return event == EventType.NULL;
     }
 }
