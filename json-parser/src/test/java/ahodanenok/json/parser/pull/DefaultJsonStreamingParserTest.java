@@ -82,4 +82,120 @@ public class DefaultJsonStreamingParserTest {
         assertEquals(false, parser.getBoolean());
         assertFalse(parser.next());
     }
+
+    @Test
+    public void testParseEmptyArray() {
+        JsonStreamingParser parser = new DefaultJsonStreamingParser(new StringReader("[]"));
+        assertTrue(parser.next());
+        assertEquals(EventType.BEGIN_ARRAY, parser.currentEvent());
+        assertTrue(parser.next());
+        assertEquals(EventType.END_ARRAY, parser.currentEvent());
+        assertFalse(parser.next());
+    }
+
+    @Test
+    public void testParseArrayOneLevel() {
+        JsonStreamingParser parser = new DefaultJsonStreamingParser(new StringReader("[1.23, true, \"true\", null]"));
+        assertTrue(parser.next());
+        assertEquals(EventType.BEGIN_ARRAY, parser.currentEvent());
+        assertTrue(parser.next());
+        assertEquals(EventType.NUMBER, parser.currentEvent());
+        assertEquals(1.23, parser.getDouble());
+        assertTrue(parser.next());
+        assertEquals(EventType.BOOLEAN, parser.currentEvent());
+        assertEquals(true, parser.getBoolean());
+        assertTrue(parser.next());
+        assertEquals(EventType.STRING, parser.currentEvent());
+        assertEquals("true", parser.getString());
+        assertTrue(parser.next());
+        assertEquals(EventType.NULL, parser.currentEvent());
+        assertEquals(true, parser.isNull());
+        assertTrue(parser.next());
+        assertEquals(EventType.END_ARRAY, parser.currentEvent());
+        assertFalse(parser.next());
+    }
+
+    @Test
+    public void testParseArrayNested() {
+        JsonStreamingParser parser = new DefaultJsonStreamingParser(new StringReader("""
+            [
+                false,
+                [
+                    [500],
+                    null
+                ],
+                [],
+                true,
+                [
+                    "x",
+                    [
+                        \"yz\",
+                        [
+                            [
+                                [-2.34]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        """));
+        assertTrue(parser.next());
+        assertEquals(EventType.BEGIN_ARRAY, parser.currentEvent());
+        assertTrue(parser.next());
+        assertEquals(EventType.BOOLEAN, parser.currentEvent());
+        assertEquals(false, parser.getBoolean());
+        assertTrue(parser.next());
+        assertEquals(EventType.BEGIN_ARRAY, parser.currentEvent());
+        assertTrue(parser.next());
+        assertEquals(EventType.BEGIN_ARRAY, parser.currentEvent());
+        assertTrue(parser.next());
+        assertEquals(EventType.NUMBER, parser.currentEvent());
+        assertEquals(500, parser.getDouble());
+        assertTrue(parser.next());
+        assertEquals(EventType.END_ARRAY, parser.currentEvent());
+        assertTrue(parser.next());
+        assertEquals(EventType.NULL, parser.currentEvent());
+        assertEquals(true, parser.isNull());
+        assertTrue(parser.next());
+        assertEquals(EventType.END_ARRAY, parser.currentEvent());
+        assertTrue(parser.next());
+        assertEquals(EventType.BEGIN_ARRAY, parser.currentEvent());
+        assertTrue(parser.next());
+        assertEquals(EventType.END_ARRAY, parser.currentEvent());
+        assertTrue(parser.next());
+        assertEquals(EventType.BOOLEAN, parser.currentEvent());
+        assertEquals(true, parser.getBoolean());
+        assertTrue(parser.next());
+        assertEquals(EventType.BEGIN_ARRAY, parser.currentEvent());
+        assertTrue(parser.next());
+        assertEquals(EventType.STRING, parser.currentEvent());
+        assertEquals("x", parser.getString());
+        assertTrue(parser.next());
+        assertEquals(EventType.BEGIN_ARRAY, parser.currentEvent());
+        assertTrue(parser.next());
+        assertEquals(EventType.STRING, parser.currentEvent());
+        assertEquals("yz", parser.getString());
+        assertTrue(parser.next());
+        assertEquals(EventType.BEGIN_ARRAY, parser.currentEvent());
+        assertTrue(parser.next());
+        assertEquals(EventType.BEGIN_ARRAY, parser.currentEvent());
+        assertTrue(parser.next());
+        assertEquals(EventType.BEGIN_ARRAY, parser.currentEvent());
+        assertTrue(parser.next());
+        assertEquals(EventType.NUMBER, parser.currentEvent());
+        assertEquals(-2.34, parser.getDouble());
+        assertTrue(parser.next());
+        assertEquals(EventType.END_ARRAY, parser.currentEvent());
+        assertTrue(parser.next());
+        assertEquals(EventType.END_ARRAY, parser.currentEvent());
+        assertTrue(parser.next());
+        assertEquals(EventType.END_ARRAY, parser.currentEvent());
+        assertTrue(parser.next());
+        assertEquals(EventType.END_ARRAY, parser.currentEvent());
+        assertTrue(parser.next());
+        assertEquals(EventType.END_ARRAY, parser.currentEvent());
+        assertTrue(parser.next());
+        assertEquals(EventType.END_ARRAY, parser.currentEvent());
+        assertFalse(parser.next());
+    }
 }

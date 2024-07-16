@@ -1,6 +1,7 @@
 package ahodanenok.json.parser.pull;
 
 import java.io.Reader;
+import java.util.LinkedList;
 
 import ahodanenok.json.parser.tokenizer.DefaultJsonTokenizer;
 import ahodanenok.json.parser.tokenizer.JsonToken;
@@ -9,12 +10,21 @@ import ahodanenok.json.parser.tokenizer.TokenType;
 
 public final class DefaultJsonStreamingParser implements JsonStreamingParser {
 
+    private class EventContext {
+
+        boolean isArray;
+        boolean isObject;
+        int valuePos;
+    }
+
     private final JsonTokenizer tokenizer;
 
     private EventType event;
+    private LinkedList<EventContext> contexts;
 
     public DefaultJsonStreamingParser(Reader reader) {
         this.tokenizer = new DefaultJsonTokenizer(reader);
+        this.contexts = new LinkedList<>();
     }
 
     @Override
@@ -23,17 +33,55 @@ public final class DefaultJsonStreamingParser implements JsonStreamingParser {
             return false;
         }
 
+        EventContext context;
+        if (contexts.size() > 0) {
+            context = contexts.peek();
+        } else {
+            context = null;
+        }
+
         JsonToken token = tokenizer.currentToken();
         if (token.getType().equals(TokenType.STRING)) {
             event = EventType.STRING;
+            if (context != null) {
+                context.valuePos++;
+            }
         } else if (token.getType().equals(TokenType.NUMBER)) {
             event = EventType.NUMBER;
+            if (context != null) {
+                context.valuePos++;
+            }
         } else if (token.getType().equals(TokenType.NULL)) {
             event = EventType.NULL;
+            if (context != null) {
+                context.valuePos++;
+            }
         } else if (token.getType().equals(TokenType.TRUE)) {
             event = EventType.BOOLEAN;
+            if (context != null) {
+                context.valuePos++;
+            }
         } else if (token.getType().equals(TokenType.FALSE)) {
             event = EventType.BOOLEAN;
+            if (context != null) {
+                context.valuePos++;
+            }
+        } else if (token.getType().equals(TokenType.VALUE_SEPARATOR)
+                && context != null && context.valuePos > 0) {
+            return next();
+        } else if (token.getType().equals(TokenType.BEGIN_ARRAY)) {
+            event = EventType.BEGIN_ARRAY;
+            if (context != null) {
+                context.valuePos++;
+            }
+
+            EventContext arrayContext = new EventContext();
+            arrayContext.isArray = true;
+            contexts.push(arrayContext);
+        } else if (token.getType().equals(TokenType.END_ARRAY)
+                && context != null && context.isArray) {
+            event = EventType.END_ARRAY;
+            contexts.pop();
         } else {
             // todo: custom exception?
             throw new IllegalStateException(token.getType().name());
