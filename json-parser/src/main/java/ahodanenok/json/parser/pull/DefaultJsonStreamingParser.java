@@ -41,7 +41,10 @@ public final class DefaultJsonStreamingParser implements JsonStreamingParser {
         }
 
         JsonToken token = tokenizer.currentToken();
-        if (token.getType().equals(TokenType.STRING)) {
+        if (token.getType().equals(TokenType.STRING)
+                && context != null && context.isObject && event != EventType.OBJECT_KEY) {
+            event = EventType.OBJECT_KEY;
+        } else if (token.getType().equals(TokenType.STRING)) {
             event = EventType.STRING;
             if (context != null) {
                 context.valuePos++;
@@ -82,6 +85,22 @@ public final class DefaultJsonStreamingParser implements JsonStreamingParser {
                 && context != null && context.isArray) {
             event = EventType.END_ARRAY;
             contexts.pop();
+        } else if (token.getType().equals(TokenType.BEGIN_OBJECT)) {
+            event = EventType.BEGIN_OBJECT;
+            if (context != null) {
+                context.valuePos++;
+            }
+
+            EventContext objectContext = new EventContext();
+            objectContext.isObject = true;
+            contexts.push(objectContext);
+        } else if (token.getType().equals(TokenType.END_OBJECT)
+                && context != null && context.isObject) {
+            event = EventType.END_OBJECT;
+            contexts.pop();
+        } else if (token.getType().equals(TokenType.NAME_SEPARATOR)
+                && event == EventType.OBJECT_KEY) {
+            return next();
         } else {
             // todo: custom exception?
             throw new IllegalStateException(token.getType().name());
