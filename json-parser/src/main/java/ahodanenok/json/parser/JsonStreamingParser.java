@@ -1,4 +1,4 @@
-package ahodanenok.json.parser.pull;
+package ahodanenok.json.parser;
 
 public interface JsonStreamingParser {
 

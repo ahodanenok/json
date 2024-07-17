@@ -1,4 +1,4 @@
-package ahodanenok.json.parser.pull;
+package ahodanenok.json.parser;
 
 import java.io.StringReader;
 
