@@ -9,9 +9,26 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DefaultJsonStreamingParserTest {
+
+    @ParameterizedTest
+    @CsvSource({
+        "\"abc\" true,     true",
+        "\"hello world\" \"123\",     \"123\"",
+        "300 false,     false",
+        "null 20213,      20213",
+        "[2] {},     {",
+        "{} [],     ["
+    })
+    public void testErrorWhenMultipleValues(String s, String expected) {
+        JsonStreamingParser parser = new DefaultJsonStreamingParser(new StringReader(s));
+        JsonParseException e = assertThrows(
+            JsonParseException.class, () -> { while (parser.next()); });
+        assertEquals(String.format("Unexpected token '%s' after the value", expected), e.getMessage());
+    }
 
     @Test
     public void testParseNoContent() {
@@ -81,6 +98,29 @@ public class DefaultJsonStreamingParserTest {
         assertEquals(EventType.BOOLEAN, parser.currentEvent());
         assertEquals(false, parser.getBoolean());
         assertFalse(parser.next());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "[", "[100", "[true,", "[true,{\"a\":2}" })
+    public void testErrorUnexpectedEndOfArray(String s) {
+        JsonStreamingParser parser = new DefaultJsonStreamingParser(new StringReader(s));
+        JsonParseException e = assertThrows(
+            JsonParseException.class, () -> { while (parser.next()); });
+        assertEquals("Unexpected end of an array", e.getMessage());
+    }
+
+    @ParameterizedTest
+    @CsvSource(delimiterString = "---", value = {
+        "[1 2 --- 2",
+        "[[] true] --- true",
+        "[null, 4.00 \"abc\", --- \"abc\"",
+        "[3:2:1] --- :"
+    })
+    public void testErrorUnexpectedTokenInArray(String s, String expected) {
+        JsonStreamingParser parser = new DefaultJsonStreamingParser(new StringReader(s));
+        JsonParseException e = assertThrows(
+            JsonParseException.class, () -> { while (parser.next()); });
+        assertEquals(String.format("Expected ',' but '%s' was encountered", expected), e.getMessage());
     }
 
     @Test
@@ -197,6 +237,43 @@ public class DefaultJsonStreamingParserTest {
         assertTrue(parser.next());
         assertEquals(EventType.END_ARRAY, parser.currentEvent());
         assertFalse(parser.next());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "{", "{\"a\":", "{\"a\":1,", "{\"a\":1,\"b\":true" })
+    public void testErrorUnexpectedEndOfObject(String s) {
+        JsonStreamingParser parser = new DefaultJsonStreamingParser(new StringReader(s));
+        JsonParseException e = assertThrows(
+            JsonParseException.class, () -> { while (parser.next()); });
+        assertEquals("Unexpected end of an object", e.getMessage());
+    }
+
+    @ParameterizedTest
+    @CsvSource(delimiterString = "---", value = {
+        "{\"ddd\": 300 : --- :",
+        "{\"x\": {} [] --- ["
+    })
+    public void testErrorUnexpectedValueSeparator(String s, String expected) {
+        JsonStreamingParser parser = new DefaultJsonStreamingParser(new StringReader(s));
+        JsonParseException e = assertThrows(
+            JsonParseException.class, () -> { while (parser.next()); });
+        assertEquals(String.format("Expected ',' but '%s' was encountered", expected), e.getMessage());
+    }
+
+    @Test
+    public void testErrorExpectedName() {
+        JsonStreamingParser parser = new DefaultJsonStreamingParser(new StringReader("{\"abc\":false, 521"));
+        JsonParseException e = assertThrows(
+            JsonParseException.class, () -> { while (parser.next()); });
+        assertEquals("Expected name, but '521' was encountered", e.getMessage());
+    }
+
+    @Test
+    public void testErrorExpectedNameSeparator() {
+        JsonStreamingParser parser = new DefaultJsonStreamingParser(new StringReader("{\"abc\" false}"));
+        JsonParseException e = assertThrows(
+            JsonParseException.class, () -> { while (parser.next()); });
+        assertEquals("Expected ':', but 'false' was encountered", e.getMessage());
     }
 
     @Test

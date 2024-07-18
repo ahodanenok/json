@@ -211,7 +211,7 @@ public class DefaultJsonValueParserTest {
         "{\"ddd\": 300 : --- :",
         "{\"x\": {} [] --- ["
     })
-    public void testErrorExpectedValueSeparator(String s, String expected) {
+    public void testErrorUnexpectedValueSeparator(String s, String expected) {
         JsonValueParser parser = new DefaultJsonValueParser();
         JsonParseException e = assertThrows(
             JsonParseException.class, () -> parser.readValue(new StringReader(s)));

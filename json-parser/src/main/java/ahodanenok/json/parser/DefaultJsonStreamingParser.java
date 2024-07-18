@@ -15,6 +15,8 @@ public final class DefaultJsonStreamingParser implements JsonStreamingParser {
         boolean isArray;
         boolean isObject;
         int valuePos;
+        boolean valueSeparatorSeen;
+        boolean nameSeparatorSeen;
     }
 
     private final JsonTokenizer tokenizer;
@@ -29,10 +31,6 @@ public final class DefaultJsonStreamingParser implements JsonStreamingParser {
 
     @Override
     public boolean next() {
-        if (!tokenizer.advance()) {
-            return false;
-        }
-
         EventContext context;
         if (contexts.size() > 0) {
             context = contexts.peek();
@@ -40,43 +38,61 @@ public final class DefaultJsonStreamingParser implements JsonStreamingParser {
             context = null;
         }
 
+        if (!tokenizer.advance()) {
+            if (context != null && context.isArray) {
+                throw new JsonParseException("Unexpected end of an array", tokenizer.halt());
+            } else if (context != null && context.isObject) {
+                throw new JsonParseException("Unexpected end of an object", tokenizer.halt());
+            }
+
+            return false;
+        }
+
         JsonToken token = tokenizer.currentToken();
-        if (token.getType().equals(TokenType.STRING)
+        if (context == null && event != null) {
+            throw new JsonParseException(
+                String.format("Unexpected token '%s' after the value", token.getRepresentation()),
+                tokenizer.halt());
+        } else if (token.getType().equals(TokenType.STRING)
                 && context != null && context.isObject && event != EventType.OBJECT_KEY) {
             event = EventType.OBJECT_KEY;
         } else if (token.getType().equals(TokenType.STRING)) {
+            if (context != null) {
+                processContextOnValue(context, token);
+            }
             event = EventType.STRING;
-            if (context != null) {
-                context.valuePos++;
-            }
         } else if (token.getType().equals(TokenType.NUMBER)) {
+            if (context != null) {
+                processContextOnValue(context, token);
+            }
             event = EventType.NUMBER;
-            if (context != null) {
-                context.valuePos++;
-            }
         } else if (token.getType().equals(TokenType.NULL)) {
+            if (context != null) {
+                processContextOnValue(context, token);
+            }
+
             event = EventType.NULL;
-            if (context != null) {
-                context.valuePos++;
-            }
         } else if (token.getType().equals(TokenType.TRUE)) {
-            event = EventType.BOOLEAN;
             if (context != null) {
-                context.valuePos++;
+                processContextOnValue(context, token);
             }
+
+            event = EventType.BOOLEAN;
         } else if (token.getType().equals(TokenType.FALSE)) {
-            event = EventType.BOOLEAN;
             if (context != null) {
-                context.valuePos++;
+                processContextOnValue(context, token);
             }
+
+            event = EventType.BOOLEAN;
         } else if (token.getType().equals(TokenType.VALUE_SEPARATOR)
                 && context != null && context.valuePos > 0) {
+            context.valueSeparatorSeen = true;
             return next();
         } else if (token.getType().equals(TokenType.BEGIN_ARRAY)) {
-            event = EventType.BEGIN_ARRAY;
             if (context != null) {
-                context.valuePos++;
+                processContextOnValue(context, token);
             }
+            event = EventType.BEGIN_ARRAY;
 
             EventContext arrayContext = new EventContext();
             arrayContext.isArray = true;
@@ -86,10 +102,10 @@ public final class DefaultJsonStreamingParser implements JsonStreamingParser {
             event = EventType.END_ARRAY;
             contexts.pop();
         } else if (token.getType().equals(TokenType.BEGIN_OBJECT)) {
-            event = EventType.BEGIN_OBJECT;
             if (context != null) {
-                context.valuePos++;
+                processContextOnValue(context, token);
             }
+            event = EventType.BEGIN_OBJECT;
 
             EventContext objectContext = new EventContext();
             objectContext.isObject = true;
@@ -100,22 +116,51 @@ public final class DefaultJsonStreamingParser implements JsonStreamingParser {
             contexts.pop();
         } else if (token.getType().equals(TokenType.NAME_SEPARATOR)
                 && event == EventType.OBJECT_KEY) {
+            context.nameSeparatorSeen = true;
             return next();
+        } else if (token.getType().equals(TokenType.NAME_SEPARATOR)
+                && context != null) {
+            throw new JsonParseException(
+                String.format("Expected ',' but '%s' was encountered", token.getRepresentation()),
+                tokenizer.halt());
         } else {
-            // todo: custom exception?
-            throw new IllegalStateException(token.getType().name());
+            throw new JsonParseException(
+                String.format("Unexpected token '%s'", token.getRepresentation()),
+                tokenizer.halt());
         }
 
-        // todo: throw error if multiple values at the root
-
         return true;
+    }
+
+    private void processContextOnValue(EventContext context, JsonToken token) {
+        if (!context.valueSeparatorSeen && context.valuePos > 0) {
+            throw new JsonParseException(
+                String.format("Expected ',' but '%s' was encountered", token.getRepresentation()),
+                tokenizer.halt());
+        }
+
+        if (context.isObject && event != EventType.OBJECT_KEY) {
+            throw new JsonParseException(
+                String.format("Expected name, but '%s' was encountered", token.getRepresentation()),
+                tokenizer.halt());
+        }
+
+        if (context.isObject && !context.nameSeparatorSeen) {
+            throw new JsonParseException(
+                String.format("Expected ':', but '%s' was encountered", token.getRepresentation()),
+                tokenizer.halt());
+        }
+
+        context.valuePos++;
+        context.valueSeparatorSeen = false;
+        context.nameSeparatorSeen = false;
     }
 
     @Override
     public EventType currentEvent() {
         if (event == null) {
-            // todo: custom exception?
-            throw new IllegalStateException("no event");
+            throw new IllegalStateException(
+                "There is no current event. This method must be called only after `next()` returned true");
         }
 
         return event;
@@ -123,26 +168,42 @@ public final class DefaultJsonStreamingParser implements JsonStreamingParser {
 
     @Override
     public String getString() {
-        // todo: what if not a string
+        if (event != EventType.STRING && event != EventType.OBJECT_KEY) {
+            throw new IllegalStateException(String.format(
+                "Current event must be '%s' or '%s', but was '%s'",
+                EventType.STRING, EventType.OBJECT_KEY, event));
+        }
+
         return tokenizer.currentToken().stringValue();
     }
 
     @Override
     public double getDouble() {
-        // todo: what if not a number
+        if (event != EventType.NUMBER) {
+            throw new IllegalStateException(String.format(
+                "Current event must be '%s', but was '%s'",
+                EventType.NUMBER, event));
+        }
+
         return tokenizer.currentToken().doubleValue();
     }
 
     @Override
     public boolean getBoolean() {
+        if (event != EventType.BOOLEAN) {
+            throw new IllegalStateException(String.format(
+                "Current event must be '%s', but was '%s'",
+                EventType.BOOLEAN, event));
+        }
+
         TokenType tokenType = tokenizer.currentToken().getType();
         if (tokenType == TokenType.TRUE) {
             return true;
         } else if (tokenType == TokenType.FALSE) {
             return false;
         } else {
-            // todo: what if not a boolean
-            throw new IllegalStateException("not a boolean");
+            throw new IllegalStateException(String.format(
+                "Unexpected token '%' during '%s' event", tokenType, event));
         }
     }
 
