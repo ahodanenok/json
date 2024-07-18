@@ -23,6 +23,8 @@ tasks.named('test', Test) {
 }
 
 dependencies {
+    implementation project(':json-value')
+
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.3'
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.10.3'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
