@@ -2,3 +2,4 @@ rootProject.name = 'json'
 
 include('json-value')
 include('json-parser')
+include('json-writer')

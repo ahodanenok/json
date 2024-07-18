@@ -1,0 +1,31 @@
+plugins {
+    id 'java'
+}
+
+version = '0.1'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+tasks.named('test', Test) {
+    useJUnitPlatform()
+    testLogging {
+        events 'failed', 'skipped', 'standard_out', 'standard_error'
+        exceptionFormat "full"
+    }
+}
+
+dependencies {
+    implementation project(':json-value')
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.3'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.10.3'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
