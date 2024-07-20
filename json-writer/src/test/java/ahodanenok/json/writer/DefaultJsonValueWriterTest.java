@@ -10,6 +10,7 @@ import ahodanenok.json.value.JsonArray;
 import ahodanenok.json.value.JsonBoolean;
 import ahodanenok.json.value.JsonNull;
 import ahodanenok.json.value.JsonNumber;
+import ahodanenok.json.value.JsonObject;
 import ahodanenok.json.value.JsonString;
 import ahodanenok.json.value.JsonValue;
 
@@ -147,5 +148,69 @@ public class DefaultJsonValueWriterTest {
         JsonValueWriter jsonWriter = new DefaultJsonValueWriter();
         jsonWriter.writeValue(value, writer);
         assertEquals("[\"123\",[200.0,[\"result\",null],[],[[[true,-67.89]]]],500.0]", writer.toString());
+    }
+
+    @Test
+    public void testWriteEmptyObject() {
+        StringWriter writer = new StringWriter();
+        JsonValue value = JsonObject.builder().build();
+        JsonValueWriter jsonWriter = new DefaultJsonValueWriter();
+        jsonWriter.writeValue(value, writer);
+        assertEquals("{}", writer.toString());
+    }
+
+    @Test
+    public void testWriteOneElementObject() {
+        StringWriter writer = new StringWriter();
+        JsonValue value = JsonObject.builder()
+            .add("result", new JsonBoolean(true))
+            .build();
+        JsonValueWriter jsonWriter = new DefaultJsonValueWriter();
+        jsonWriter.writeValue(value, writer);
+        assertEquals("{\"result\":true}", writer.toString());
+    }
+
+    @Test
+    public void testWriteMultipleElementsObject() {
+        StringWriter writer = new StringWriter();
+        JsonValue value = JsonObject.builder()
+            .add("result", new JsonBoolean(true))
+            .add("num", new JsonNumber(20923))
+            .add("data", new JsonNull())
+            .add("status", new JsonString("ok"))
+            .build();
+        JsonValueWriter jsonWriter = new DefaultJsonValueWriter();
+        jsonWriter.writeValue(value, writer);
+        assertEquals("{\"result\":true,\"num\":20923.0,\"data\":null,\"status\":\"ok\"}", writer.toString());
+    }
+
+    @Test
+    public void testWriteOneLevelNestedObject() {
+        StringWriter writer = new StringWriter();
+        JsonValue value = JsonObject.builder()
+            .add("data", JsonObject.builder()
+                .add("null", new JsonNull())
+                .add("", JsonObject.builder().build())
+                .add("result", JsonObject.builder()
+                    .add("abc", JsonObject.builder()
+                        .add("a", new JsonBoolean(true))
+                        .add("b", new JsonString("c"))
+                        .build())
+                    .build())
+                .build())
+            .add("test", new JsonNumber(321))
+            .add("response", JsonObject.builder()
+                .add("status", new JsonNumber(200))
+                .add("message", new JsonString("OK"))
+                .build())
+            .add("x", JsonObject.builder()
+                .add("y", JsonObject.builder()
+                    .add("z", new JsonBoolean(false))
+                    .build())
+                .build())
+            .build();
+        JsonValueWriter jsonWriter = new DefaultJsonValueWriter();
+        jsonWriter.writeValue(value, writer);
+        assertEquals("{\"data\":{\"null\":null,\"\":{},\"result\":{\"abc\":{\"a\":true,\"b\":\"c\"}}},\"test\":321.0,\"response\":{\"status\":200.0,\"message\":\"OK\"},\"x\":{\"y\":{\"z\":false}}}", writer.toString());
     }
 }
