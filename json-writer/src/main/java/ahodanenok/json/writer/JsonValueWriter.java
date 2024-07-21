@@ -1,10 +1,8 @@
 package ahodanenok.json.writer;
 
-import java.io.Writer;
-
 import ahodanenok.json.value.JsonValue;
 
 public interface JsonValueWriter {
 
-    void writeValue(JsonValue value, Writer writer);
+    void writeValue(JsonValue value, JsonOutput writer);
 }

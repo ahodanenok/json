@@ -23,7 +23,7 @@ public class DefaultJsonValueWriterTest {
         StringWriter writer = new StringWriter();
         JsonValue value = new JsonNull();
         JsonValueWriter jsonWriter = new DefaultJsonValueWriter();
-        jsonWriter.writeValue(value, writer);
+        jsonWriter.writeValue(value, new DefaultJsonOutput(writer));
         assertEquals("null", writer.toString());
     }
 
@@ -32,7 +32,7 @@ public class DefaultJsonValueWriterTest {
         StringWriter writer = new StringWriter();
         JsonValue value = new JsonBoolean(true);
         JsonValueWriter jsonWriter = new DefaultJsonValueWriter();
-        jsonWriter.writeValue(value, writer);
+        jsonWriter.writeValue(value, new DefaultJsonOutput(writer));
         assertEquals("true", writer.toString());
     }
 
@@ -41,7 +41,7 @@ public class DefaultJsonValueWriterTest {
         StringWriter writer = new StringWriter();
         JsonValue value = new JsonBoolean(false);
         JsonValueWriter jsonWriter = new DefaultJsonValueWriter();
-        jsonWriter.writeValue(value, writer);
+        jsonWriter.writeValue(value, new DefaultJsonOutput(writer));
         assertEquals("false", writer.toString());
     }
 
@@ -55,7 +55,7 @@ public class DefaultJsonValueWriterTest {
         StringWriter writer = new StringWriter();
         JsonValue value = new JsonString(s);
         JsonValueWriter jsonWriter = new DefaultJsonValueWriter();
-        jsonWriter.writeValue(value, writer);
+        jsonWriter.writeValue(value, new DefaultJsonOutput(writer));
         assertEquals(expected, writer.toString());
     }
 
@@ -71,7 +71,7 @@ public class DefaultJsonValueWriterTest {
         StringWriter writer = new StringWriter();
         JsonValue value = new JsonNumber(n);
         JsonValueWriter jsonWriter = new DefaultJsonValueWriter();
-        jsonWriter.writeValue(value, writer);
+        jsonWriter.writeValue(value, new DefaultJsonOutput(writer));
         assertEquals(expected, writer.toString());
     }
 
@@ -80,7 +80,7 @@ public class DefaultJsonValueWriterTest {
         StringWriter writer = new StringWriter();
         JsonValue value = JsonArray.builder().build();
         JsonValueWriter jsonWriter = new DefaultJsonValueWriter();
-        jsonWriter.writeValue(value, writer);
+        jsonWriter.writeValue(value, new DefaultJsonOutput(writer));
         assertEquals("[]", writer.toString());
     }
 
@@ -89,7 +89,7 @@ public class DefaultJsonValueWriterTest {
         StringWriter writer = new StringWriter();
         JsonValue value = JsonArray.builder().add(new JsonBoolean(true)).build();
         JsonValueWriter jsonWriter = new DefaultJsonValueWriter();
-        jsonWriter.writeValue(value, writer);
+        jsonWriter.writeValue(value, new DefaultJsonOutput(writer));
         assertEquals("[true]", writer.toString());
     }
 
@@ -102,7 +102,7 @@ public class DefaultJsonValueWriterTest {
             .add(new JsonBoolean(true))
             .build();
         JsonValueWriter jsonWriter = new DefaultJsonValueWriter();
-        jsonWriter.writeValue(value, writer);
+        jsonWriter.writeValue(value, new DefaultJsonOutput(writer));
         assertEquals("[null,\"data\",true]", writer.toString());
     }
 
@@ -118,7 +118,7 @@ public class DefaultJsonValueWriterTest {
             .add(new JsonNumber(123))
             .build();
         JsonValueWriter jsonWriter = new DefaultJsonValueWriter();
-        jsonWriter.writeValue(value, writer);
+        jsonWriter.writeValue(value, new DefaultJsonOutput(writer));
         assertEquals("[\"test\",[3.25,false],123.0]", writer.toString());
     }
 
@@ -146,7 +146,7 @@ public class DefaultJsonValueWriterTest {
             .add(new JsonNumber(500))
             .build();
         JsonValueWriter jsonWriter = new DefaultJsonValueWriter();
-        jsonWriter.writeValue(value, writer);
+        jsonWriter.writeValue(value, new DefaultJsonOutput(writer));
         assertEquals("[\"123\",[200.0,[\"result\",null],[],[[[true,-67.89]]]],500.0]", writer.toString());
     }
 
@@ -155,7 +155,7 @@ public class DefaultJsonValueWriterTest {
         StringWriter writer = new StringWriter();
         JsonValue value = JsonObject.builder().build();
         JsonValueWriter jsonWriter = new DefaultJsonValueWriter();
-        jsonWriter.writeValue(value, writer);
+        jsonWriter.writeValue(value, new DefaultJsonOutput(writer));
         assertEquals("{}", writer.toString());
     }
 
@@ -166,7 +166,7 @@ public class DefaultJsonValueWriterTest {
             .add("result", new JsonBoolean(true))
             .build();
         JsonValueWriter jsonWriter = new DefaultJsonValueWriter();
-        jsonWriter.writeValue(value, writer);
+        jsonWriter.writeValue(value, new DefaultJsonOutput(writer));
         assertEquals("{\"result\":true}", writer.toString());
     }
 
@@ -180,7 +180,7 @@ public class DefaultJsonValueWriterTest {
             .add("status", new JsonString("ok"))
             .build();
         JsonValueWriter jsonWriter = new DefaultJsonValueWriter();
-        jsonWriter.writeValue(value, writer);
+        jsonWriter.writeValue(value, new DefaultJsonOutput(writer));
         assertEquals("{\"result\":true,\"num\":20923.0,\"data\":null,\"status\":\"ok\"}", writer.toString());
     }
 
@@ -210,7 +210,7 @@ public class DefaultJsonValueWriterTest {
                 .build())
             .build();
         JsonValueWriter jsonWriter = new DefaultJsonValueWriter();
-        jsonWriter.writeValue(value, writer);
+        jsonWriter.writeValue(value, new DefaultJsonOutput(writer));
         assertEquals("{\"data\":{\"null\":null,\"\":{},\"result\":{\"abc\":{\"a\":true,\"b\":\"c\"}}},\"test\":321.0,\"response\":{\"status\":200.0,\"message\":\"OK\"},\"x\":{\"y\":{\"z\":false}}}", writer.toString());
     }
 }

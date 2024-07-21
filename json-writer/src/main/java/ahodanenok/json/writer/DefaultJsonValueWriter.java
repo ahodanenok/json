@@ -1,7 +1,6 @@
 package ahodanenok.json.writer;
 
 import java.io.IOException;
-import java.io.Writer;
 import java.util.Iterator;
 
 import ahodanenok.json.value.JsonArray;
@@ -12,7 +11,7 @@ import ahodanenok.json.value.ValueType;
 public final class DefaultJsonValueWriter implements JsonValueWriter {
 
     @Override
-    public void writeValue(JsonValue value, Writer writer) {
+    public void writeValue(JsonValue value, JsonOutput writer) {
         if (value == null) {
             return;
         }
@@ -25,16 +24,16 @@ public final class DefaultJsonValueWriter implements JsonValueWriter {
         }
     }
 
-    private void doWriteValue(JsonValue value, Writer writer) throws IOException {
+    private void doWriteValue(JsonValue value, JsonOutput writer) throws IOException {
         ValueType type = value.getType();
         if (type.equals(ValueType.STRING)) {
-           writeString(value.asString().getValue(), writer);
+            writer.writeString(value.asString().getValue());
         } else if (type.equals(ValueType.NUMBER)) {
-            writer.write(Double.toString(value.asNumber().doubleValue())); // todo: does it format according to rfc
+            writer.writeNumber(value.asNumber().doubleValue());
         } else if (type.equals(ValueType.BOOLEAN)) {
-            writer.write(value.asBoolean().getValue() ? "true" : "false");
+            writer.writeBoolean(value.asBoolean().getValue());
         } else if (type.equals(ValueType.NULL)) {
-            writer.write("null");
+            writer.writeNull();
         } else if (type.equals(ValueType.ARRAY)) {
             writeArray(value.asArray(), writer);
         } else if (type.equals(ValueType.OBJECT)) {
@@ -44,40 +43,39 @@ public final class DefaultJsonValueWriter implements JsonValueWriter {
         }
     }
 
-    private void writeString(String string, Writer writer) throws IOException {
-        writer.write('"');
-        writer.write(string); // todo: escape
-        writer.write('"');
-    }
-
-    private void writeArray(JsonArray array, Writer writer) throws IOException {
-        writer.write('[');
-        for (int i = 0, n = array.size(); i < n; i++) {
-            if (i > 0) {
-                writer.write(',');
-            }
+    private void writeArray(JsonArray array, JsonOutput writer) throws IOException {
+        writer.writeBeginArray();
+        int i = 0;
+        int n = array.size();
+        if (i < n) {
             doWriteValue(array.getItem(i), writer);
+            i++;
         }
-        writer.write(']');
+        while (i < n) {
+            writer.writeValueSeparator();
+            doWriteValue(array.getItem(i), writer);
+            i++;
+        }
+        writer.writeEndArray();
     }
 
-    private void writeObject(JsonObject object, Writer writer) throws IOException {
-        writer.write('{');
+    private void writeObject(JsonObject object, JsonOutput writer) throws IOException {
+        writer.writeBeginObject();
         Iterator<String> names = object.getNames().iterator();
         String name;
         if (names.hasNext()) {
             name = names.next();
-            writeString(name, writer);
-            writer.write(':');
+            writer.writeString(name);
+            writer.writeNameSeparator();
             doWriteValue(object.getValue(name), writer);
         }
         while (names.hasNext()) {
-            writer.write(',');
+            writer.writeValueSeparator();
             name = names.next();
-            writeString(name, writer);
-            writer.write(':');
+            writer.writeString(name);
+            writer.writeNameSeparator();
             doWriteValue(object.getValue(name), writer);
         }
-        writer.write('}');
+        writer.writeEndObject();
     }
 }
