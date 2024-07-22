@@ -1,18 +1,40 @@
 package ahodanenok.json.writer;
 
 import java.io.IOException;
+import java.util.LinkedList;
 
 public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
 
+    private enum ContextType {
+        ROOT, ARRAY, OBJECT;
+    }
+
+    private class WriteContext {
+        ContextType type;
+        int valuePos;
+        boolean nameWritten;
+    }
+
     private final JsonOutput output;
+    private LinkedList<WriteContext> contexts;
 
     public DefaultJsonStreamingWriter(JsonOutput output) {
         this.output = output;
+        this.contexts = new LinkedList<>();
+
+        WriteContext context = new WriteContext();
+        context.type = ContextType.ROOT;
+        this.contexts.push(context);
     }
 
     @Override
     public void writeBeginArray() {
-        // todo: check valid
+        prepareWriteOnValue();
+
+        WriteContext arrayContext = new WriteContext();
+        arrayContext.type = ContextType.ARRAY;
+        contexts.push(arrayContext);
+
         try {
             output.writeBeginArray();
         } catch (IOException e) {
@@ -34,13 +56,25 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
 
     @Override
     public void writeEnd() {
-        // todo: check valid
-        // todo: impl
+        WriteContext context = contexts.pop();
+        if (context.type == ContextType.ARRAY) {
+            try {
+                output.writeEndArray();
+            } catch (IOException e) {
+                // todo: custom exception
+                throw new RuntimeException(e);
+            }
+        } else if (context.type == ContextType.ROOT) {
+            // todo: custom exception
+            throw new RuntimeException("not an object or array");
+        } else {
+            throw new IllegalStateException("Unknown context: " + context.type);
+        }
     }
 
     @Override
     public void writeName(String name) {
-        // todo: check valid
+        prepareWriteOnValue();
         try {
             output.writeString(name);
             output.writeNameSeparator();
@@ -52,7 +86,7 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
 
     @Override
     public void writeString(String str) {
-        // todo: check valid
+        prepareWriteOnValue();
         try {
             output.writeString(str);
         } catch (IOException e) {
@@ -63,7 +97,7 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
 
     @Override
     public void writeNumber(double num) {
-        // todo: check valid
+        prepareWriteOnValue();
         try {
             output.writeNumber(num);
         } catch (IOException e) {
@@ -74,7 +108,7 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
 
     @Override
     public void writeBoolean(boolean bool) {
-        // todo: check valid
+        prepareWriteOnValue();
         try {
             output.writeBoolean(bool);
         } catch (IOException e) {
@@ -85,12 +119,32 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
 
     @Override
     public void writeNull() {
-        // todo: check valid
+        prepareWriteOnValue();
         try {
             output.writeNull();
         } catch (IOException e) {
             // todo: custom exception
             throw new RuntimeException(e);
         }
+    }
+
+    private void prepareWriteOnValue() {
+        WriteContext context = contexts.peek();
+        if (context == null) {
+            throw new IllegalStateException("No context!");
+        }
+
+        if (context.type == ContextType.ROOT && context.valuePos > 0) {
+            // todo: custom exception
+            throw new RuntimeException("multiple top-level values");
+        } else if (context.valuePos > 0) {
+            try {
+                output.writeValueSeparator();
+            } catch (IOException e) {
+                // todo: custom exception
+                throw new RuntimeException(e);
+            }
+        }
+        context.valuePos++;
     }
 }
