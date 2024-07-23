@@ -185,7 +185,7 @@ public class DefaultJsonValueWriterTest {
     }
 
     @Test
-    public void testWriteOneLevelNestedObject() {
+    public void testWriteNestedObject() {
         StringWriter writer = new StringWriter();
         JsonValue value = JsonObject.builder()
             .add("data", JsonObject.builder()

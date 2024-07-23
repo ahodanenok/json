@@ -142,4 +142,85 @@ public class DefaultJsonStreamingWriterTest {
         jsonWriter.writeEnd();
         assertEquals("[[],\"list\",[true,[[null,[],\"123\"]],null],500.0,[[\"a\",[false],\"b\",\"c\"]]]", writer.toString());
     }
+
+    @Test
+    public void testWriteEmptyObject() {
+        StringWriter writer = new StringWriter();
+        JsonStreamingWriter jsonWriter = new DefaultJsonStreamingWriter(new DefaultJsonOutput(writer));
+        jsonWriter.writeBeginObject();
+        jsonWriter.writeEnd();
+        assertEquals("{}", writer.toString());
+    }
+
+    @Test
+    public void testWriteOneElementObject() {
+        StringWriter writer = new StringWriter();
+        JsonStreamingWriter jsonWriter = new DefaultJsonStreamingWriter(new DefaultJsonOutput(writer));
+        jsonWriter.writeBeginObject();
+        jsonWriter.writeName("request");
+        jsonWriter.writeBoolean(true);
+        jsonWriter.writeEnd();
+        assertEquals("{\"request\":true}", writer.toString());
+    }
+
+    @Test
+    public void testWriteMultipleElementObject() {
+        StringWriter writer = new StringWriter();
+        JsonStreamingWriter jsonWriter = new DefaultJsonStreamingWriter(new DefaultJsonOutput(writer));
+        jsonWriter.writeBeginObject();
+        jsonWriter.writeName("result");
+        jsonWriter.writeBoolean(true);
+        jsonWriter.writeName("num");
+        jsonWriter.writeNumber(20923);
+        jsonWriter.writeName("data");
+        jsonWriter.writeNull();
+        jsonWriter.writeName("status");
+        jsonWriter.writeString("ok");
+        jsonWriter.writeEnd();
+        assertEquals("{\"result\":true,\"num\":20923.0,\"data\":null,\"status\":\"ok\"}", writer.toString());
+    }
+
+    @Test
+    public void testWriteNestedObject() {
+        StringWriter writer = new StringWriter();
+        JsonStreamingWriter jsonWriter = new DefaultJsonStreamingWriter(new DefaultJsonOutput(writer));
+        jsonWriter.writeBeginObject();
+        jsonWriter.writeName("data");
+        jsonWriter.writeBeginObject();
+        jsonWriter.writeName("null");
+        jsonWriter.writeNull();
+        jsonWriter.writeName("");
+        jsonWriter.writeBeginObject();
+        jsonWriter.writeEnd();
+        jsonWriter.writeName("result");
+        jsonWriter.writeBeginObject();
+        jsonWriter.writeName("abc");
+        jsonWriter.writeBeginObject();
+        jsonWriter.writeName("a");
+        jsonWriter.writeBoolean(true);
+        jsonWriter.writeName("b");
+        jsonWriter.writeString("c");
+        jsonWriter.writeEnd();
+        jsonWriter.writeEnd();
+        jsonWriter.writeEnd();
+        jsonWriter.writeName("test");
+        jsonWriter.writeNumber(321);
+        jsonWriter.writeName("response");
+        jsonWriter.writeBeginObject();
+        jsonWriter.writeName("status");
+        jsonWriter.writeNumber(200);
+        jsonWriter.writeName("message");
+        jsonWriter.writeString("OK");
+        jsonWriter.writeEnd();
+        jsonWriter.writeName("x");
+        jsonWriter.writeBeginObject();
+        jsonWriter.writeName("y");
+        jsonWriter.writeBeginObject();
+        jsonWriter.writeName("z");
+        jsonWriter.writeBoolean(false);
+        jsonWriter.writeEnd();
+        jsonWriter.writeEnd();
+        jsonWriter.writeEnd();
+        assertEquals("{\"data\":{\"null\":null,\"\":{},\"result\":{\"abc\":{\"a\":true,\"b\":\"c\"}}},\"test\":321.0,\"response\":{\"status\":200.0,\"message\":\"OK\"},\"x\":{\"y\":{\"z\":false}}}", writer.toString());
+    }
 }
