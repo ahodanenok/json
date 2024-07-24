@@ -7,6 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class DefaultJsonStreamingWriterTest {
 
@@ -222,5 +223,68 @@ public class DefaultJsonStreamingWriterTest {
         jsonWriter.writeEnd();
         jsonWriter.writeEnd();
         assertEquals("{\"data\":{\"null\":null,\"\":{},\"result\":{\"abc\":{\"a\":true,\"b\":\"c\"}}},\"test\":321.0,\"response\":{\"status\":200.0,\"message\":\"OK\"},\"x\":{\"y\":{\"z\":false}}}", writer.toString());
+    }
+
+    @Test
+    public void testWriteErrorWhenMultipleValuesRoot() {
+        JsonStreamingWriter jsonWriter = new DefaultJsonStreamingWriter(new DefaultJsonOutput(new StringWriter()));
+        JsonWriteException e = assertThrows(JsonWriteException.class, () -> {
+            jsonWriter.writeBoolean(true);
+            jsonWriter.writeString("test");
+        });
+        assertEquals("There can be only one value at the root", e.getMessage());
+    }
+
+    @Test
+    public void testWriteErrorWhenNoArrayToEnd() {
+        JsonStreamingWriter jsonWriter = new DefaultJsonStreamingWriter(new DefaultJsonOutput(new StringWriter()));
+        JsonWriteException e = assertThrows(JsonWriteException.class, () -> {
+            jsonWriter.writeBeginArray();
+            jsonWriter.writeEnd();
+            jsonWriter.writeEnd();
+        });
+        assertEquals("There is no open object or array to end", e.getMessage());
+    }
+
+    @Test
+    public void testWriteErrorWhenNoObjectToEnd() {
+        JsonStreamingWriter jsonWriter = new DefaultJsonStreamingWriter(new DefaultJsonOutput(new StringWriter()));
+        JsonWriteException e = assertThrows(JsonWriteException.class, () -> {
+            jsonWriter.writeBeginObject();
+            jsonWriter.writeEnd();
+            jsonWriter.writeEnd();
+        });
+        assertEquals("There is no open object or array to end", e.getMessage());
+    }
+
+    @Test
+    public void testWriteErrorWhenTwoNames() {
+        JsonStreamingWriter jsonWriter = new DefaultJsonStreamingWriter(new DefaultJsonOutput(new StringWriter()));
+        JsonWriteException e = assertThrows(JsonWriteException.class, () -> {
+            jsonWriter.writeBeginObject();
+            jsonWriter.writeName("a");
+            jsonWriter.writeName("b");
+        });
+        assertEquals("Can't write two names in a row without a value between them", e.getMessage());
+    }
+
+    @Test
+    public void testWriteErrorWhenNameNotInObject() {
+        JsonStreamingWriter jsonWriter = new DefaultJsonStreamingWriter(new DefaultJsonOutput(new StringWriter()));
+        JsonWriteException e = assertThrows(JsonWriteException.class, () -> {
+            jsonWriter.writeBeginArray();
+            jsonWriter.writeName("c");
+        });
+        assertEquals("Must be in an object context, but current is array", e.getMessage());
+    }
+
+    @Test
+    public void testWriteErrorWhenValueWithoutName() {
+        JsonStreamingWriter jsonWriter = new DefaultJsonStreamingWriter(new DefaultJsonOutput(new StringWriter()));
+        JsonWriteException e = assertThrows(JsonWriteException.class, () -> {
+            jsonWriter.writeBeginObject();
+            jsonWriter.writeNumber(1);
+        });
+        assertEquals("Each object member must begin with a name", e.getMessage());
     }
 }

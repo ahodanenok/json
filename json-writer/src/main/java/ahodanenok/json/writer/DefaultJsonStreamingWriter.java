@@ -38,8 +38,7 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
         try {
             output.writeBeginArray();
         } catch (IOException e) {
-            // todo: custom exception
-            throw new RuntimeException(e);
+            throw new JsonWriteIOException("Failed to writeBeginArray", e);
         }
     }
 
@@ -54,8 +53,7 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
         try {
             output.writeBeginObject();
         } catch (IOException e) {
-            // todo: custom exception
-            throw new RuntimeException(e);
+            throw new JsonWriteIOException("Failed to writeBeginObject", e);
         }
     }
 
@@ -66,19 +64,16 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
             try {
                 output.writeEndArray();
             } catch (IOException e) {
-                // todo: custom exception
-                throw new RuntimeException(e);
+                throw new JsonWriteIOException("Failed to writeEnd", e);
             }
         } else if (context.type == ContextType.OBJECT) {
             try {
                 output.writeEndObject();
             } catch (IOException e) {
-                // todo: custom exception
-                throw new RuntimeException(e);
+                throw new JsonWriteIOException("Failed to writeEnd", e);
             }
         } else if (context.type == ContextType.ROOT) {
-            // todo: custom exception
-            throw new RuntimeException("not an object or array");
+            throw new JsonWriteException("There is no open object or array to end");
         } else {
             throw new IllegalStateException("Unknown context: " + context.type);
         }
@@ -87,19 +82,27 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
     @Override
     public void writeName(String name) {
         WriteContext context = contexts.peek();
-        if (context.type != ContextType.OBJECT || context.nameWritten) {
-            // todo: custom exception
-            throw new RuntimeException();
+        if (context.type != ContextType.OBJECT) {
+            throw new JsonWriteException(String.format(
+                "Must be in an object context, but current is %s", context.type.name().toLowerCase()));
+        } else if (context.nameWritten) {
+            throw new JsonWriteException("Can't write two names in a row without a value between them");
         }
-        prepareWriteOnValue();
+
+        if (context.valuePos > 0) {
+            try {
+                output.writeValueSeparator();
+            } catch (IOException e) {
+                throw new JsonWriteIOException("Failed to writeValueSeparator", e);
+            }
+        }
 
         try {
             output.writeString(name);
             output.writeNameSeparator();
             context.nameWritten = true;
         } catch (IOException e) {
-            // todo: custom exception
-            throw new RuntimeException(e);
+            throw new JsonWriteIOException("Failed to writeName", e);
         }
     }
 
@@ -109,8 +112,7 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
         try {
             output.writeString(str);
         } catch (IOException e) {
-            // todo: custom exception
-            throw new RuntimeException(e);
+            throw new JsonWriteIOException("Failed to writeString", e);
         }
     }
 
@@ -120,8 +122,7 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
         try {
             output.writeNumber(num);
         } catch (IOException e) {
-            // todo: custom exception
-            throw new RuntimeException(e);
+            throw new JsonWriteIOException("Failed to writeNumber", e);
         }
     }
 
@@ -131,8 +132,7 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
         try {
             output.writeBoolean(bool);
         } catch (IOException e) {
-            // todo: custom exception
-            throw new RuntimeException(e);
+            throw new JsonWriteIOException("Failed to writeBoolean", e);
         }
     }
 
@@ -142,8 +142,7 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
         try {
             output.writeNull();
         } catch (IOException e) {
-            // todo: custom exception
-            throw new RuntimeException(e);
+            throw new JsonWriteIOException("Failed to writeNull", e);
         }
     }
 
@@ -154,23 +153,17 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
         }
 
         if (context.type == ContextType.ROOT && context.valuePos > 0) {
-            // todo: custom exception
-            throw new RuntimeException("multiple top-level values");
+            throw new JsonWriteException("There can be only one value at the root");
         } else if (context.type == ContextType.ARRAY && context.valuePos > 0) {
             try {
                 output.writeValueSeparator();
             } catch (IOException e) {
-                // todo: custom exception
-                throw new RuntimeException(e);
+                throw new JsonWriteIOException("Failed to writeValueSeparator", e);
             }
-        } else if (context.type == ContextType.OBJECT && context.valuePos > 0 && !context.nameWritten) {
-            try {
-                output.writeValueSeparator();
-            } catch (IOException e) {
-                // todo: custom exception
-                throw new RuntimeException(e);
-            }
+        } else if (context.type == ContextType.OBJECT && !context.nameWritten) {
+            throw new JsonWriteException("Each object member must begin with a name");
         }
+
         context.valuePos++;
         context.nameWritten = false;
     }
