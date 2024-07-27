@@ -290,7 +290,6 @@ public final class DefaultJsonTokenizer implements JsonTokenizer {
         return uc;
     }
 
-    // todo: config for reading as double/bigdecimal?
     private JsonToken readNumber() throws IOException {
         buf.clear();
 
@@ -299,9 +298,14 @@ public final class DefaultJsonTokenizer implements JsonTokenizer {
             ch = reader.read();
             if (ch == -1) {
                 break;
-            } else if (isWhitespace(ch)
-                    // todo: temporary while number reading is not implemented
-                    || !(ch >= '0' && ch <= '9' || ch == '+' || ch == '-' || ch == 'e' || ch == 'E' || ch == '.')) {
+            } else if (isWhitespace(ch)) {
+                reader.unread(ch);
+                break;
+            } else if (!(
+                    ch >= '0' && ch <= '9'
+                    || ch == '+' || ch == '-'
+                    || ch == 'e' || ch == 'E'
+                    || ch == '.')) {
                 reader.unread(ch);
                 break;
             }
