@@ -61,9 +61,9 @@ public final class DefaultJsonValueParser implements JsonValueParser {
         } else if (token.getType().equals(TokenType.NULL)) {
             return new JsonNull();
         } else if (token.getType().equals(TokenType.TRUE)) {
-            return new JsonBoolean(true);
+            return JsonBoolean.TRUE;
         } else if (token.getType().equals(TokenType.FALSE)) {
-            return new JsonBoolean(false);
+            return JsonBoolean.FALSE;
         } else if (token.getType().equals(TokenType.BEGIN_ARRAY)) {
             return readArray(tokenizer);
         } else if (token.getType().equals(TokenType.BEGIN_OBJECT)) {

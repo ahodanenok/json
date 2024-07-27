@@ -30,7 +30,7 @@ public class DefaultJsonValueWriterTest {
     @Test
     public void testWriteTrue() {
         StringWriter writer = new StringWriter();
-        JsonValue value = new JsonBoolean(true);
+        JsonValue value = JsonBoolean.of(true);
         JsonValueWriter jsonWriter = new DefaultJsonValueWriter();
         jsonWriter.writeValue(value, new DefaultJsonOutput(writer));
         assertEquals("true", writer.toString());
@@ -39,7 +39,7 @@ public class DefaultJsonValueWriterTest {
     @Test
     public void testWriteFalse() {
         StringWriter writer = new StringWriter();
-        JsonValue value = new JsonBoolean(false);
+        JsonValue value = JsonBoolean.of(false);
         JsonValueWriter jsonWriter = new DefaultJsonValueWriter();
         jsonWriter.writeValue(value, new DefaultJsonOutput(writer));
         assertEquals("false", writer.toString());
@@ -87,7 +87,7 @@ public class DefaultJsonValueWriterTest {
     @Test
     public void testWriteOneElementArray() {
         StringWriter writer = new StringWriter();
-        JsonValue value = JsonArray.builder().add(new JsonBoolean(true)).build();
+        JsonValue value = JsonArray.builder().add(JsonBoolean.of(true)).build();
         JsonValueWriter jsonWriter = new DefaultJsonValueWriter();
         jsonWriter.writeValue(value, new DefaultJsonOutput(writer));
         assertEquals("[true]", writer.toString());
@@ -99,7 +99,7 @@ public class DefaultJsonValueWriterTest {
         JsonValue value = JsonArray.builder()
             .add(new JsonNull())
             .add(new JsonString("data"))
-            .add(new JsonBoolean(true))
+            .add(JsonBoolean.of(true))
             .build();
         JsonValueWriter jsonWriter = new DefaultJsonValueWriter();
         jsonWriter.writeValue(value, new DefaultJsonOutput(writer));
@@ -113,7 +113,7 @@ public class DefaultJsonValueWriterTest {
             .add(new JsonString("test"))
             .add(JsonArray.builder()
                 .add(JsonNumber.of(3.25))
-                .add(new JsonBoolean(false))
+                .add(JsonBoolean.of(false))
                 .build())
             .add(JsonNumber.of(123))
             .build();
@@ -137,7 +137,7 @@ public class DefaultJsonValueWriterTest {
                 .add(JsonArray.builder()
                     .add(JsonArray.builder()
                         .add(JsonArray.builder()
-                            .add(new JsonBoolean(true))
+                            .add(JsonBoolean.of(true))
                             .add(JsonNumber.of(-67.89))
                             .build())
                         .build())
@@ -163,7 +163,7 @@ public class DefaultJsonValueWriterTest {
     public void testWriteOneElementObject() {
         StringWriter writer = new StringWriter();
         JsonValue value = JsonObject.builder()
-            .add("result", new JsonBoolean(true))
+            .add("result", JsonBoolean.of(true))
             .build();
         JsonValueWriter jsonWriter = new DefaultJsonValueWriter();
         jsonWriter.writeValue(value, new DefaultJsonOutput(writer));
@@ -174,7 +174,7 @@ public class DefaultJsonValueWriterTest {
     public void testWriteMultipleElementsObject() {
         StringWriter writer = new StringWriter();
         JsonValue value = JsonObject.builder()
-            .add("result", new JsonBoolean(true))
+            .add("result", JsonBoolean.of(true))
             .add("num", JsonNumber.of(20923))
             .add("data", new JsonNull())
             .add("status", new JsonString("ok"))
@@ -193,7 +193,7 @@ public class DefaultJsonValueWriterTest {
                 .add("", JsonObject.builder().build())
                 .add("result", JsonObject.builder()
                     .add("abc", JsonObject.builder()
-                        .add("a", new JsonBoolean(true))
+                        .add("a", JsonBoolean.of(true))
                         .add("b", new JsonString("c"))
                         .build())
                     .build())
@@ -205,7 +205,7 @@ public class DefaultJsonValueWriterTest {
                 .build())
             .add("x", JsonObject.builder()
                 .add("y", JsonObject.builder()
-                    .add("z", new JsonBoolean(false))
+                    .add("z", JsonBoolean.of(false))
                     .build())
                 .build())
             .build();
