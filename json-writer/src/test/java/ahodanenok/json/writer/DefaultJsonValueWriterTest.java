@@ -8,7 +8,6 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 import ahodanenok.json.value.JsonArray;
 import ahodanenok.json.value.JsonBoolean;
-import ahodanenok.json.value.JsonNull;
 import ahodanenok.json.value.JsonNumber;
 import ahodanenok.json.value.JsonObject;
 import ahodanenok.json.value.JsonString;
@@ -21,7 +20,7 @@ public class DefaultJsonValueWriterTest {
     @Test
     public void testWriteNull() {
         StringWriter writer = new StringWriter();
-        JsonValue value = new JsonNull();
+        JsonValue value = JsonValue.NULL;
         JsonValueWriter jsonWriter = new DefaultJsonValueWriter();
         jsonWriter.writeValue(value, new DefaultJsonOutput(writer));
         assertEquals("null", writer.toString());
@@ -97,7 +96,7 @@ public class DefaultJsonValueWriterTest {
     public void testWriteMultipleElementArray() {
         StringWriter writer = new StringWriter();
         JsonValue value = JsonArray.builder()
-            .add(new JsonNull())
+            .add(JsonValue.NULL)
             .add(new JsonString("data"))
             .add(JsonBoolean.of(true))
             .build();
@@ -131,7 +130,7 @@ public class DefaultJsonValueWriterTest {
                 .add(JsonNumber.of(200))
                 .add(JsonArray.builder()
                     .add(new JsonString("result"))
-                    .add(new JsonNull())
+                    .add(JsonValue.NULL)
                     .build())
                 .add(JsonArray.builder().build())
                 .add(JsonArray.builder()
@@ -176,7 +175,7 @@ public class DefaultJsonValueWriterTest {
         JsonValue value = JsonObject.builder()
             .add("result", JsonBoolean.of(true))
             .add("num", JsonNumber.of(20923))
-            .add("data", new JsonNull())
+            .add("data", JsonValue.NULL)
             .add("status", new JsonString("ok"))
             .build();
         JsonValueWriter jsonWriter = new DefaultJsonValueWriter();
@@ -189,7 +188,7 @@ public class DefaultJsonValueWriterTest {
         StringWriter writer = new StringWriter();
         JsonValue value = JsonObject.builder()
             .add("data", JsonObject.builder()
-                .add("null", new JsonNull())
+                .add("null", JsonValue.NULL)
                 .add("", JsonObject.builder().build())
                 .add("result", JsonObject.builder()
                     .add("abc", JsonObject.builder()

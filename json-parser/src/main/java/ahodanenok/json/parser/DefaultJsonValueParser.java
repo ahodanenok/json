@@ -12,7 +12,6 @@ import ahodanenok.json.parser.tokenizer.JsonTokenizer;
 import ahodanenok.json.parser.tokenizer.TokenType;
 import ahodanenok.json.value.JsonArray;
 import ahodanenok.json.value.JsonBoolean;
-import ahodanenok.json.value.JsonNull;
 import ahodanenok.json.value.JsonNumber;
 import ahodanenok.json.value.JsonObject;
 import ahodanenok.json.value.JsonString;
@@ -59,7 +58,7 @@ public final class DefaultJsonValueParser implements JsonValueParser {
                 return JsonNumber.of(token.doubleValue());
             }
         } else if (token.getType().equals(TokenType.NULL)) {
-            return new JsonNull();
+            return JsonValue.NULL;
         } else if (token.getType().equals(TokenType.TRUE)) {
             return JsonBoolean.TRUE;
         } else if (token.getType().equals(TokenType.FALSE)) {

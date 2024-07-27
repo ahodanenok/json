@@ -2,6 +2,8 @@ package ahodanenok.json.value;
 
 public abstract class JsonValue {
 
+    public static final JsonNull NULL = new JsonNull();
+
     private final ValueType type;
 
     JsonValue(ValueType type) {

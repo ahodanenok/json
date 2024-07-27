@@ -1,8 +1,8 @@
 package ahodanenok.json.value;
 
-public final class JsonNull extends JsonValue {
+final class JsonNull extends JsonValue {
 
-    public JsonNull() {
+    JsonNull() {
         super(ValueType.NULL);
     }
 }
