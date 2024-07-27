@@ -67,9 +67,9 @@ public class DefaultJsonValueWriterTest {
         "12.34,    12.34",
         "-523.7812,     -523.7812"
     })
-    public void testWriteNumber(Double n, String expected) {
+    public void testWriteNumber(double n, String expected) {
         StringWriter writer = new StringWriter();
-        JsonValue value = new JsonNumber(n);
+        JsonValue value = JsonNumber.of(n);
         JsonValueWriter jsonWriter = new DefaultJsonValueWriter();
         jsonWriter.writeValue(value, new DefaultJsonOutput(writer));
         assertEquals(expected, writer.toString());
@@ -112,10 +112,10 @@ public class DefaultJsonValueWriterTest {
         JsonValue value = JsonArray.builder()
             .add(new JsonString("test"))
             .add(JsonArray.builder()
-                .add(new JsonNumber(3.25))
+                .add(JsonNumber.of(3.25))
                 .add(new JsonBoolean(false))
                 .build())
-            .add(new JsonNumber(123))
+            .add(JsonNumber.of(123))
             .build();
         JsonValueWriter jsonWriter = new DefaultJsonValueWriter();
         jsonWriter.writeValue(value, new DefaultJsonOutput(writer));
@@ -128,7 +128,7 @@ public class DefaultJsonValueWriterTest {
         JsonValue value = JsonArray.builder()
             .add(new JsonString("123"))
             .add(JsonArray.builder()
-                .add(new JsonNumber(200))
+                .add(JsonNumber.of(200))
                 .add(JsonArray.builder()
                     .add(new JsonString("result"))
                     .add(new JsonNull())
@@ -138,12 +138,12 @@ public class DefaultJsonValueWriterTest {
                     .add(JsonArray.builder()
                         .add(JsonArray.builder()
                             .add(new JsonBoolean(true))
-                            .add(new JsonNumber(-67.89))
+                            .add(JsonNumber.of(-67.89))
                             .build())
                         .build())
                     .build())
                 .build())
-            .add(new JsonNumber(500))
+            .add(JsonNumber.of(500))
             .build();
         JsonValueWriter jsonWriter = new DefaultJsonValueWriter();
         jsonWriter.writeValue(value, new DefaultJsonOutput(writer));
@@ -175,7 +175,7 @@ public class DefaultJsonValueWriterTest {
         StringWriter writer = new StringWriter();
         JsonValue value = JsonObject.builder()
             .add("result", new JsonBoolean(true))
-            .add("num", new JsonNumber(20923))
+            .add("num", JsonNumber.of(20923))
             .add("data", new JsonNull())
             .add("status", new JsonString("ok"))
             .build();
@@ -198,9 +198,9 @@ public class DefaultJsonValueWriterTest {
                         .build())
                     .build())
                 .build())
-            .add("test", new JsonNumber(321))
+            .add("test", JsonNumber.of(321))
             .add("response", JsonObject.builder()
-                .add("status", new JsonNumber(200))
+                .add("status", JsonNumber.of(200))
                 .add("message", new JsonString("OK"))
                 .build())
             .add("x", JsonObject.builder()

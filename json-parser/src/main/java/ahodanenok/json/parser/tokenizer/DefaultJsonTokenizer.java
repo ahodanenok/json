@@ -3,6 +3,7 @@ package ahodanenok.json.parser.tokenizer;
 import java.io.PushbackReader;
 import java.io.Reader;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.CharBuffer;
 
 import ahodanenok.json.parser.JsonParseException;
@@ -335,15 +336,21 @@ public final class DefaultJsonTokenizer implements JsonTokenizer {
         }
 
         try {
-            // todo: implement https://datatracker.ietf.org/doc/html/rfc8259#section-6
             String representation = buf.flip().toString();
-            double number = Double.parseDouble(representation);
-
-            return new JsonDoubleToken(TokenType.NUMBER, number, representation);
+            if (config.useBigDecimal) {
+                BigDecimal number = new BigDecimal(representation);
+                return new JsonNumberToken.BigDecimalType(number, representation);
+            } else {
+                double number = Double.parseDouble(representation);
+                if (number == -0.0) {
+                    number = 0.0;
+                }
+                return new JsonNumberToken.DoubleType(number, representation);
+            }
         } catch (NumberFormatException e) {
-            JsonParseState state = halt();
             throw new JsonParseException(
-                String.format("Incorrect number '%s'", buf.toString()), state);
+                String.format("Incorrect number '%s'", buf.toString()),
+                halt());
         }
     }
 

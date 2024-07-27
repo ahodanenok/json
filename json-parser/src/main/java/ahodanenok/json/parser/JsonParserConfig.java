@@ -15,10 +15,18 @@ public final class JsonParserConfig {
     }
 
     public void setMaxStringLength(int length) {
-        this.tokenizerConfig.setMaxStringLength(length);
+        tokenizerConfig.setMaxStringLength(length);
     }
 
     public void setMaxNumberLength(int length) {
-        this.tokenizerConfig.setMaxNumberLength(length);
+        tokenizerConfig.setMaxNumberLength(length);
+    }
+
+    public boolean isUseBigDecimal() {
+        return tokenizerConfig.isUseBigDecimal();
+    }
+
+    public void setUseBigDecimal(boolean use) {
+        tokenizerConfig.setUseBigDecimal(use);
     }
 }

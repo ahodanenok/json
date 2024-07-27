@@ -1,5 +1,7 @@
 package ahodanenok.json.parser.tokenizer;
 
+import java.math.BigDecimal;
+
 public abstract class JsonToken {
 
     static final JsonToken BEGIN_ARRAY = new JsonLiteralToken(TokenType.BEGIN_ARRAY, "[");
@@ -23,6 +25,11 @@ public abstract class JsonToken {
     }
 
     public double doubleValue() {
+        throw new UnsupportedOperationException(
+            String.format("Token of type '%s' is not a number", type));
+    }
+
+    public BigDecimal bigDecimalValue() {
         throw new UnsupportedOperationException(
             String.format("Token of type '%s' is not a number", type));
     }
