@@ -50,7 +50,7 @@ public final class DefaultJsonValueParser implements JsonValueParser {
 
         JsonToken token = tokenizer.currentToken();
         if (token.getType().equals(TokenType.STRING)) {
-            return new JsonString(token.stringValue());
+            return JsonString.of(token.stringValue());
         } else if (token.getType().equals(TokenType.NUMBER)) {
             if (config.isUseBigDecimal()) {
                 return JsonNumber.of(token.bigDecimalValue());
