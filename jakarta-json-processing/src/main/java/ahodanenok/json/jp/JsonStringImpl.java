@@ -5,7 +5,11 @@ import jakarta.json.JsonValue;
 
 final class JsonStringImpl implements JsonString {
 
-    private String string;
+    private final String value;
+
+    JsonStringImpl(String value) {
+        this.value = value;
+    }
 
     @Override
     public JsonValue.ValueType getValueType() {
@@ -14,26 +18,31 @@ final class JsonStringImpl implements JsonString {
 
     @Override
     public String getString() {
-        return null;
+        return value;
     }
 
     @Override
     public CharSequence getChars() {
-        return null;
+        return value;
     }
 
     @Override
     public boolean equals(Object obj) {
-        return false;
+        if (obj == null || !(obj instanceof JsonString)) {
+            return false;
+        }
+
+        return value.equals(((JsonString) obj).getString());
     }
 
     @Override
     public int hashCode() {
-        return 0;
+        return value.hashCode();
     }
 
     @Override
     public String toString() {
+        // todo: impl
         return null;
     }
 }
