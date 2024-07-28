@@ -1,0 +1,30 @@
+plugins {
+    id 'java'
+}
+
+version = '0.1'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+tasks.named('test', Test) {
+    useJUnitPlatform()
+    testLogging {
+        events 'failed', 'skipped', 'standard_out', 'standard_error'
+        exceptionFormat "full"
+    }
+}
+
+dependencies {
+    implementation 'jakarta.json:jakarta.json-api:2.1.3'
+    implementation project(':json-value')
+    implementation project(':json-parser')
+    implementation project(':json-writer')
+}
