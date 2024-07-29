@@ -3,9 +3,15 @@ package ahodanenok.json.jp;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-final class JsonNumberDoubleImpl implements jakarta.json.JsonNumber {
+import jakarta.json.JsonNumber;
 
-    private double value;
+final class JsonNumberDoubleImpl implements JsonNumber {
+
+    private final double value;
+
+    JsonNumberDoubleImpl(double value) {
+        this.value = value;
+    }
 
     @Override
     public ValueType getValueType() {
@@ -14,37 +20,45 @@ final class JsonNumberDoubleImpl implements jakarta.json.JsonNumber {
 
     @Override
     public boolean isIntegral() {
-        return false;
+        return BigDecimal.valueOf(value).stripTrailingZeros().scale() <= 0;
     }
 
     @Override
     public int intValue() {
-        return 0;
+        return (int) value;
     }
 
     @Override
     public int intValueExact() {
-        return 0;
+        if (value < Integer.MIN_VALUE || value > Integer.MAX_VALUE || ((int) value) != value) {
+            throw new ArithmeticException(String.format("Number '%s' is not representable as 'int'", value));
+        }
+
+        return (int) value;
     }
 
     @Override
     public long longValue() {
-        return 0;
+        return (long) value;
     }
 
     @Override
     public long longValueExact() {
-        return 0;
+        if (value < Long.MIN_VALUE || value > Long.MAX_VALUE || ((long) value) != value) {
+            throw new ArithmeticException(String.format("Number '%s' is not representable as 'long'", value));
+        }
+
+        return (long) value;
     }
 
     @Override
     public BigInteger bigIntegerValue() {
-        return null;
+        return BigDecimal.valueOf(value).toBigInteger();
     }
 
     @Override
     public BigInteger bigIntegerValueExact() {
-        return null;
+        return BigDecimal.valueOf(value).toBigIntegerExact();
     }
 
     @Override
@@ -54,26 +68,35 @@ final class JsonNumberDoubleImpl implements jakarta.json.JsonNumber {
 
     @Override
     public BigDecimal bigDecimalValue() {
-        return null;
+        return BigDecimal.valueOf(value);
     }
 
     @Override
     public Number numberValue() {
-        return null;
+        return Double.valueOf(value);
     }
 
     @Override
     public String toString() {
+        // todo: impl
         return null;
     }
 
     @Override
     public boolean equals(Object obj) {
-        return false;
+        if (obj == null || !(obj instanceof JsonNumber)) {
+            return false;
+        }
+
+        if (obj instanceof JsonNumberDoubleImpl other) {
+            return value == other.value;
+        }
+
+        return bigDecimalValue().equals(((JsonNumber) obj).bigDecimalValue());
     }
 
     @Override
     public int hashCode() {
-        return 0;
+        return Double.hashCode(value);
     }
 }
