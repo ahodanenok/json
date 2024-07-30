@@ -3,9 +3,15 @@ package ahodanenok.json.jp;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-final class JsonNumberLongImpl implements jakarta.json.JsonNumber {
+import jakarta.json.JsonNumber;
 
-    private long value;
+final class JsonNumberLongImpl implements JsonNumber {
+
+    private final long value;
+
+    JsonNumberLongImpl(long value) {
+        this.value = value;
+    }
 
     @Override
     public ValueType getValueType() {
@@ -14,52 +20,56 @@ final class JsonNumberLongImpl implements jakarta.json.JsonNumber {
 
     @Override
     public boolean isIntegral() {
-        return false;
+        return true;
     }
 
     @Override
     public int intValue() {
-        return 0;
+        return (int) value;
     }
 
     @Override
     public int intValueExact() {
-        return 0;
+        if (value < Integer.MIN_VALUE || value > Integer.MAX_VALUE) {
+            throw new ArithmeticException(String.format("Number '%s' is not representable as 'int'", value));
+        }
+
+        return (int) value;
     }
 
     @Override
     public long longValue() {
-        return 0;
+        return value;
     }
 
     @Override
     public long longValueExact() {
-        return 0;
+        return value;
     }
 
     @Override
     public BigInteger bigIntegerValue() {
-        return null;
+        return BigInteger.valueOf(value);
     }
 
     @Override
     public BigInteger bigIntegerValueExact() {
-        return null;
+        return BigInteger.valueOf(value);
     }
 
     @Override
     public double doubleValue() {
-        return 0;
+        return value;
     }
 
     @Override
     public BigDecimal bigDecimalValue() {
-        return null;
+        return BigDecimal.valueOf(value);
     }
 
     @Override
     public Number numberValue() {
-        return null;
+        return Long.valueOf(value);
     }
 
     @Override
@@ -69,11 +79,19 @@ final class JsonNumberLongImpl implements jakarta.json.JsonNumber {
 
     @Override
     public boolean equals(Object obj) {
-        return false;
+        if (obj == null || !(obj instanceof JsonNumber)) {
+            return false;
+        }
+
+        if (obj instanceof JsonNumberLongImpl other) {
+            return value == other.value;
+        }
+
+        return bigDecimalValue().equals(((JsonNumber) obj).bigDecimalValue());
     }
 
     @Override
     public int hashCode() {
-        return 0;
+        return Long.hashCode(value);
     }
 }
