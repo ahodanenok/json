@@ -2,6 +2,7 @@ package ahodanenok.json.jp;
 
 import java.util.AbstractMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import jakarta.json.JsonArray;
@@ -12,7 +13,11 @@ import jakarta.json.JsonValue;
 
 final class JsonObjectWrapperImpl extends AbstractMap<String, JsonValue> implements JsonObject {
 
-    private ahodanenok.json.value.JsonObject object;
+    private final ahodanenok.json.value.JsonObject object;
+
+    JsonObjectWrapperImpl(ahodanenok.json.value.JsonObject object) {
+        this.object = Objects.requireNonNull(object);
+    }
 
     @Override
     public JsonValue.ValueType getValueType() {

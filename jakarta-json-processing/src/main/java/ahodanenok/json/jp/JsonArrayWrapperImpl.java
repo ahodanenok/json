@@ -7,11 +7,17 @@ import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
 
 import java.util.AbstractList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 final class JsonArrayWrapperImpl extends AbstractList<JsonValue> implements JsonArray {
 
-    private ahodanenok.json.value.JsonArray array;
+    private final ahodanenok.json.value.JsonArray array;
+
+    JsonArrayWrapperImpl(ahodanenok.json.value.JsonArray array) {
+        this.array = Objects.requireNonNull(array);
+    }
 
     @Override
     public ValueType getValueType() {
@@ -20,72 +26,116 @@ final class JsonArrayWrapperImpl extends AbstractList<JsonValue> implements Json
 
     @Override
     public JsonValue get(int index) {
-        return null;
+        ahodanenok.json.value.JsonValue value = array.getItem(index);
+        ahodanenok.json.value.ValueType type = value.getType();
+        if (type.equals(ahodanenok.json.value.ValueType.NULL)) {
+            return JsonValue.NULL;
+        } else if (type.equals(ahodanenok.json.value.ValueType.STRING)) {
+            return new JsonStringImpl(value.asString().getValue());
+        } else if (type.equals(ahodanenok.json.value.ValueType.NUMBER)) {
+            return new JsonNumberDoubleImpl(value.asNumber().doubleValue());
+        } else if (type.equals(ahodanenok.json.value.ValueType.BOOLEAN)) {
+            return value.asBoolean().getValue() ? JsonValue.TRUE : JsonValue.FALSE;
+        } else if (type.equals(ahodanenok.json.value.ValueType.ARRAY)) {
+            return new JsonArrayWrapperImpl(value.asArray());
+        } else if (type.equals(ahodanenok.json.value.ValueType.OBJECT)) {
+            return new JsonObjectWrapperImpl(value.asObject());
+        } else {
+            throw new IllegalStateException(type.toString());
+        }
     }
 
     @Override
     public int size() {
-        return 0;
+        return array.size();
     }
 
     @Override
     public JsonObject getJsonObject(int index) {
-        return null;
+        return new JsonObjectWrapperImpl(array.getItem(index).asObject());
     }
 
     @Override
     public JsonArray getJsonArray(int index) {
-        return null;
+        return new JsonArrayWrapperImpl(array.getItem(index).asArray());
     }
 
     @Override
     public JsonNumber getJsonNumber(int index) {
-        return null;
+        return new JsonNumberDoubleImpl(array.getItem(index).asNumber().doubleValue());
     }
 
     @Override
     public JsonString getJsonString(int index) {
-        return null;
+        return new JsonStringImpl(array.getItem(index).asString().getValue());
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T extends JsonValue> List<T> getValuesAs(Class<T> clazz) {
-        return null;
+        return (List<T>) Collections.unmodifiableList(this);
     }
 
     @Override
     public String getString(int index) {
-        return null;
+        return array.getItem(index).asString().getValue();
     }
 
     @Override
     public String getString(int index, String defaultValue) {
-        return null;
+        if (index < 0 || index >= array.size()) {
+            return defaultValue;
+        }
+
+        ahodanenok.json.value.JsonValue value = array.getItem(index);
+        if (!value.getType().equals(ahodanenok.json.value.ValueType.STRING)) {
+            return defaultValue;
+        }
+
+        return value.asString().getValue();
     }
 
     @Override
     public int getInt(int index) {
-        return 0;
+        return (int) array.getItem(index).asNumber().doubleValue();
     }
 
     @Override
     public int getInt(int index, int defaultValue) {
-        return 0;
+        if (index < 0 || index >= array.size()) {
+            return defaultValue;
+        }
+
+        ahodanenok.json.value.JsonValue value = array.getItem(index);
+        if (!value.getType().equals(ahodanenok.json.value.ValueType.NUMBER)) {
+            return defaultValue;
+        }
+
+        return (int) value.asNumber().doubleValue();
     }
 
     @Override
     public boolean getBoolean(int index) {
-        return false;
+        return array.getItem(index).asBoolean().getValue();
     }
 
     @Override
     public boolean getBoolean(int index, boolean defaultValue) {
-        return false;
+        if (index < 0 || index >= array.size()) {
+            return defaultValue;
+        }
+
+        ahodanenok.json.value.JsonValue value = array.getItem(index);
+        if (!value.getType().equals(ahodanenok.json.value.ValueType.BOOLEAN)) {
+            return defaultValue;
+        }
+
+        return (boolean) value.asBoolean().getValue();
     }
 
     @Override
     public boolean isNull(int index) {
-        return false;
+        return array.getItem(index).isNull();
     }
 
     @Override
