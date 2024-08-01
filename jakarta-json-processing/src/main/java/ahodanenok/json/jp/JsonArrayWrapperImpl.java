@@ -73,7 +73,7 @@ final class JsonArrayWrapperImpl extends AbstractList<JsonValue> implements Json
     @Override
     @SuppressWarnings("unchecked")
     public <T extends JsonValue> List<T> getValuesAs(Class<T> clazz) {
-        return (List<T>) Collections.unmodifiableList(this);
+        return (List<T>) this;
     }
 
     @Override
