@@ -2,10 +2,17 @@ package ahodanenok.json.jp;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Objects;
 
-final class JsonNumberWrapperImpl implements jakarta.json.JsonNumber {
+import jakarta.json.JsonNumber;
 
-    private ahodanenok.json.value.JsonNumber number;
+final class JsonNumberWrapperImpl implements JsonNumber {
+
+    private final ahodanenok.json.value.JsonNumber number;
+
+    JsonNumberWrapperImpl(ahodanenok.json.value.JsonNumber number) {
+        this.number = Objects.requireNonNull(number);
+    }
 
     @Override
     public ValueType getValueType() {
@@ -14,37 +21,47 @@ final class JsonNumberWrapperImpl implements jakarta.json.JsonNumber {
 
     @Override
     public boolean isIntegral() {
-        return false;
+        return number.bigDecimalValue().stripTrailingZeros().scale() <= 0;
     }
 
     @Override
     public int intValue() {
-        return 0;
+        return (int) number.doubleValue();
     }
 
     @Override
     public int intValueExact() {
-        return 0;
+        double value = number.doubleValue();
+        if (value < Integer.MIN_VALUE || value > Integer.MAX_VALUE || ((int) value) != value) {
+            throw new ArithmeticException(String.format("Number '%s' is not representable as 'int'", value));
+        }
+
+        return (int) value;
     }
 
     @Override
     public long longValue() {
-        return 0;
+        return (long) number.doubleValue();
     }
 
     @Override
     public long longValueExact() {
-        return 0;
+        double value = number.doubleValue();
+        if (value < Long.MIN_VALUE || value > Long.MAX_VALUE || ((long) value) != value) {
+            throw new ArithmeticException(String.format("Number '%s' is not representable as 'long'", value));
+        }
+
+        return (long) value;
     }
 
     @Override
     public BigInteger bigIntegerValue() {
-        return null;
+        return bigDecimalValue().toBigInteger();
     }
 
     @Override
     public BigInteger bigIntegerValueExact() {
-        return null;
+        return bigDecimalValue().toBigIntegerExact();
     }
 
     @Override
@@ -54,12 +71,12 @@ final class JsonNumberWrapperImpl implements jakarta.json.JsonNumber {
 
     @Override
     public BigDecimal bigDecimalValue() {
-        return null;
+        return number.bigDecimalValue();
     }
 
     @Override
     public Number numberValue() {
-        return null;
+        return number.bigDecimalValue();
     }
 
     @Override
@@ -69,11 +86,15 @@ final class JsonNumberWrapperImpl implements jakarta.json.JsonNumber {
 
     @Override
     public boolean equals(Object obj) {
-        return false;
+        if (obj == null || !(obj instanceof JsonNumber)) {
+            return false;
+        }
+
+        return bigDecimalValue().equals(((JsonNumber) obj).bigDecimalValue());
     }
 
     @Override
     public int hashCode() {
-        return 0;
+        return number.bigDecimalValue().hashCode();
     }
 }
