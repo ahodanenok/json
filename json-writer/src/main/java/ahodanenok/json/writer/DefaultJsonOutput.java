@@ -52,4 +52,8 @@ public final class DefaultJsonOutput implements JsonOutput {
     public void writeNull() throws IOException {
         writer.write("null");
     }
+
+    public void close() throws IOException {
+        writer.close();
+    }
 }

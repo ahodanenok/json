@@ -1,8 +1,9 @@
 package ahodanenok.json.writer;
 
+import java.io.Closeable;
 import java.io.IOException;
 
-public interface JsonOutput {
+public interface JsonOutput extends Closeable {
 
     void writeBeginArray() throws IOException;
 
@@ -23,4 +24,6 @@ public interface JsonOutput {
     void writeBoolean(boolean b) throws IOException;
 
     void writeNull() throws IOException;
+
+    void close() throws IOException;
 }
