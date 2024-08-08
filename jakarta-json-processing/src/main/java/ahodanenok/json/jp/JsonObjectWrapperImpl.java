@@ -49,7 +49,7 @@ final class JsonObjectWrapperImpl extends AbstractMap<String, JsonValue> impleme
                     @Override
                     public Map.Entry<String, JsonValue> next() {
                         String name = names.next();
-                        return new SimpleEntry(name, get(name));
+                        return new SimpleEntry<>(name, get(name));
                     }
                 };
             }
@@ -189,6 +189,6 @@ final class JsonObjectWrapperImpl extends AbstractMap<String, JsonValue> impleme
 
     @Override
     public String toString() {
-        return null;
+        return Utils.writeValueToString(this);
     }
 }

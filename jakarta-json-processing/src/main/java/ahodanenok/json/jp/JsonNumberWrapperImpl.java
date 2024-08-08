@@ -81,7 +81,7 @@ final class JsonNumberWrapperImpl implements JsonNumber {
 
     @Override
     public String toString() {
-        return null;
+        return Utils.writeValueToString(this);
     }
 
     @Override

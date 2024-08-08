@@ -140,6 +140,6 @@ final class JsonArrayWrapperImpl extends AbstractList<JsonValue> implements Json
 
     @Override
     public String toString() {
-        return null;
+        return Utils.writeValueToString(this);
     }
 }

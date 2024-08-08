@@ -140,6 +140,6 @@ final class JsonObjectImpl extends AbstractMap<String, JsonValue> implements Jso
 
     @Override
     public String toString() {
-        return null;
+        return Utils.writeValueToString(this);
     }
 }

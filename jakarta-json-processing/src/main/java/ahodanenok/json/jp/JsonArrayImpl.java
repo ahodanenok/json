@@ -135,6 +135,6 @@ final class JsonArrayImpl extends AbstractList<JsonValue> implements JsonArray {
 
     @Override
     public String toString() {
-        return null;
+        return Utils.writeValueToString(this);
     }
 }
