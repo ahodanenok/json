@@ -2,6 +2,7 @@ package ahodanenok.json.jp;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Map;
 
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
@@ -77,6 +78,6 @@ final class JsonObjectBuilderImpl implements JsonObjectBuilder {
 
     @Override
     public JsonObject build() {
-        return null;
+        return new JsonObjectImpl(Map.of());
     }
 }
