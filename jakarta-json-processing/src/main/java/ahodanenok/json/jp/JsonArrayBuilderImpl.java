@@ -19,10 +19,6 @@ final class JsonArrayBuilderImpl implements JsonArrayBuilder {
         this.values = new ArrayList<>();
     }
 
-    JsonArrayBuilderImpl(JsonArray array) {
-        this.values = new ArrayList<>(array);
-    }
-
     @Override
     public JsonArrayBuilder add(JsonValue value) {
         Objects.requireNonNull(value);

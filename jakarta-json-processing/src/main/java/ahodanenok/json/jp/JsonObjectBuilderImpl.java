@@ -19,10 +19,6 @@ final class JsonObjectBuilderImpl implements JsonObjectBuilder {
         this.values = new LinkedHashMap<>();
     }
 
-    JsonObjectBuilderImpl(JsonObject object) {
-        this.values = new LinkedHashMap<>(object);
-    }
-
     @Override
     public JsonObjectBuilder add(String name, JsonValue value) {
         Objects.requireNonNull(name);
