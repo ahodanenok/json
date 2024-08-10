@@ -16,4 +16,16 @@ final class Utils {
 
         return writer.toString();
     }
+
+    static void checkDouble(double value) {
+        if (value == Double.NaN) {
+            throw new NumberFormatException("Number can't be NaN");
+        }
+        if (value == Double.NEGATIVE_INFINITY) {
+            throw new NumberFormatException("Number can't be NEGATIVE_INFINITY");
+        }
+        if (value == Double.POSITIVE_INFINITY) {
+            throw new NumberFormatException("Number can't be POSITIVE_INFINITY");
+        }
+    }
 }

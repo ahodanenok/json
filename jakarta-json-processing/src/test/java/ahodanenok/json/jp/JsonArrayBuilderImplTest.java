@@ -2,7 +2,6 @@ package ahodanenok.json.jp;
 
 import java.math.BigInteger;
 import java.math.BigDecimal;
-import java.util.List;
 
 import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;

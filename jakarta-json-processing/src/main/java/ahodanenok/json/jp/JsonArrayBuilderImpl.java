@@ -65,6 +65,7 @@ final class JsonArrayBuilderImpl implements JsonArrayBuilder {
 
     @Override
     public JsonArrayBuilder add(double value) {
+        Utils.checkDouble(value);
         values.add(new JsonNumberDoubleImpl(value));
         return this;
     }
@@ -144,6 +145,7 @@ final class JsonArrayBuilderImpl implements JsonArrayBuilder {
 
     @Override
     public JsonArrayBuilder add(int index, double value) {
+        Utils.checkDouble(value);
         values.add(index, new JsonNumberDoubleImpl(value));
         return this;
     }
@@ -216,6 +218,7 @@ final class JsonArrayBuilderImpl implements JsonArrayBuilder {
 
     @Override
     public JsonArrayBuilder set(int index, double value) {
+        Utils.checkDouble(value);
         values.set(index, new JsonNumberDoubleImpl(value));
         return this;
     }

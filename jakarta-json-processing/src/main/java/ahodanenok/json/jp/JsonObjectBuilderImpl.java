@@ -2,7 +2,9 @@ package ahodanenok.json.jp;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
@@ -11,73 +13,120 @@ import jakarta.json.JsonValue;
 
 final class JsonObjectBuilderImpl implements JsonObjectBuilder {
 
+    private final Map<String, JsonValue> values;
+
+    JsonObjectBuilderImpl() {
+        this.values = new LinkedHashMap<>();
+    }
+
+    JsonObjectBuilderImpl(JsonObject object) {
+        this.values = new LinkedHashMap<>(object);
+    }
+
     @Override
     public JsonObjectBuilder add(String name, JsonValue value) {
-        return null;
+        Objects.requireNonNull(name);
+        Objects.requireNonNull(value);
+        values.put(name, value);
+        return this;
     }
 
     @Override
     public JsonObjectBuilder add(String name, String value) {
-        return null;
+        Objects.requireNonNull(name);
+        Objects.requireNonNull(value);
+        values.put(name, new JsonStringImpl(value));
+        return this;
     }
 
     @Override
     public JsonObjectBuilder add(String name, BigInteger value) {
-        return null;
+        Objects.requireNonNull(name);
+        Objects.requireNonNull(value);
+        values.put(name, new JsonNumberBigIntegerImpl(value));
+        return this;
     }
 
     @Override
     public JsonObjectBuilder add(String name, BigDecimal value) {
-        return null;
+        Objects.requireNonNull(name);
+        Objects.requireNonNull(value);
+        values.put(name, new JsonNumberBigDecimalImpl(value));
+        return this;
     }
 
     @Override
     public JsonObjectBuilder add(String name, int value) {
-        return null;
+        Objects.requireNonNull(name);
+        values.put(name, new JsonNumberIntegerImpl(value));
+        return this;
     }
 
     @Override
     public JsonObjectBuilder add(String name, long value) {
-        return null;
+        Objects.requireNonNull(name);
+        values.put(name, new JsonNumberLongImpl(value));
+        return this;
     }
 
     @Override
     public JsonObjectBuilder add(String name, double value) {
-        return null;
+        Objects.requireNonNull(name);
+        Utils.checkDouble(value);
+        values.put(name, new JsonNumberDoubleImpl(value));
+        return this;
     }
 
     @Override
     public JsonObjectBuilder add(String name, boolean value) {
-        return null;
+        Objects.requireNonNull(name);
+        values.put(name, value ? JsonValue.TRUE : JsonValue.FALSE);
+        return this;
     }
 
     @Override
     public JsonObjectBuilder addNull(String name) {
-        return null;
+        Objects.requireNonNull(name);
+        values.put(name, JsonValue.NULL);
+        return this;
     }
 
     @Override
     public JsonObjectBuilder add(String name, JsonObjectBuilder builder) {
-        return null;
+        Objects.requireNonNull(name);
+        Objects.requireNonNull(builder);
+        values.put(name, builder.build());
+        return this;
     }
 
     @Override
     public JsonObjectBuilder add(String name, JsonArrayBuilder builder) {
-        return null;
+        Objects.requireNonNull(name);
+        Objects.requireNonNull(builder);
+        values.put(name, builder.build());
+        return this;
     }
 
     @Override
     public JsonObjectBuilder addAll(JsonObjectBuilder builder) {
-        return null;
+        Objects.requireNonNull(builder);
+        for (Map.Entry<String, JsonValue> entry : builder.build().entrySet()) {
+            values.put(entry.getKey(), entry.getValue());
+        }
+        return this;
     }
 
     @Override
     public JsonObjectBuilder remove(String name) {
-        return null;
+        Objects.requireNonNull(name);
+        values.remove(name);
+        return this;
     }
 
     @Override
     public JsonObject build() {
-        return new JsonObjectImpl(Map.of());
+        Map<String, JsonValue> valuesLocal = new LinkedHashMap<>(values);
+        values.clear();
+        return new JsonObjectImpl(valuesLocal);
     }
 }
