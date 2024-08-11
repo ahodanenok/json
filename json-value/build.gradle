@@ -13,3 +13,9 @@ repositories {
     mavenLocal()
     mavenCentral()
 }
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs << '-Xlint:unchecked'
+    options.deprecation = true
+    options.encoding = 'UTF-8'
+}
