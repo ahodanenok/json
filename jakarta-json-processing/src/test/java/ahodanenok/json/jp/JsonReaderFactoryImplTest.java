@@ -21,7 +21,7 @@ public class JsonReaderFactoryImplTest {
     }
 
     @Test
-    public void testCreateFromInputStreamWithDefaultEncoding() throws Exception {
+    public void testCreateFromInputStreamWithDefaultEncoding() {
         byte[] data = {
             (byte) 0x22,
             (byte) 0xd0,
