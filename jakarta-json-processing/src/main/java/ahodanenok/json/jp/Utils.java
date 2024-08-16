@@ -18,7 +18,7 @@ final class Utils {
     }
 
     static void checkDouble(double value) {
-        if (value == Double.NaN) {
+        if (Double.isNaN(value)) {
             throw new NumberFormatException("Number can't be NaN");
         }
         if (value == Double.NEGATIVE_INFINITY) {
