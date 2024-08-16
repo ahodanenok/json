@@ -143,4 +143,14 @@ final class JsonObjectImpl extends AbstractMap<String, JsonValue> implements Jso
     public String toString() {
         return Utils.writeValueToString(this);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return values.equals(obj);
+    }
+
+    @Override
+    public int hashCode() {
+        return values.hashCode();
+    }
 }
