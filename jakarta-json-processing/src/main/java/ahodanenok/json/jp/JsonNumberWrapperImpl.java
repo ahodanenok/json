@@ -21,7 +21,7 @@ final class JsonNumberWrapperImpl implements JsonNumber {
 
     @Override
     public boolean isIntegral() {
-        return number.bigDecimalValue().stripTrailingZeros().scale() <= 0;
+        return number.bigDecimalValue().scale() <= 0;
     }
 
     @Override

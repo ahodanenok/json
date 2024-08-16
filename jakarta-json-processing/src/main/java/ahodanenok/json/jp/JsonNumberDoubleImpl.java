@@ -20,7 +20,7 @@ final class JsonNumberDoubleImpl implements JsonNumber {
 
     @Override
     public boolean isIntegral() {
-        return BigDecimal.valueOf(value).stripTrailingZeros().scale() <= 0;
+        return BigDecimal.valueOf(value).scale() <= 0;
     }
 
     @Override

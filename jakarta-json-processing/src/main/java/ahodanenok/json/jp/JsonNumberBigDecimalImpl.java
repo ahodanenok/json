@@ -11,7 +11,7 @@ final class JsonNumberBigDecimalImpl implements JsonNumber {
     private final BigDecimal value;
 
     JsonNumberBigDecimalImpl(BigDecimal value) {
-        this.value = Objects.requireNonNull(value).stripTrailingZeros();
+        this.value = Objects.requireNonNull(value);
     }
 
     @Override
