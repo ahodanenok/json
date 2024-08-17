@@ -103,7 +103,7 @@ public class DefaultJsonStreamingWriterTest {
         jsonWriter.writeBoolean(true);
         jsonWriter.writeBeginArray();
         jsonWriter.writeNull();
-        jsonWriter.writeNumber(123);
+        jsonWriter.writeNumber(123f);
         jsonWriter.writeEnd();
         jsonWriter.writeEnd();
         assertEquals("[true,[null,123.0]]", writer.toString());
@@ -141,7 +141,7 @@ public class DefaultJsonStreamingWriterTest {
         jsonWriter.writeEnd();
         jsonWriter.writeEnd();
         jsonWriter.writeEnd();
-        assertEquals("[[],\"list\",[true,[[null,[],\"123\"]],null],500.0,[[\"a\",[false],\"b\",\"c\"]]]", writer.toString());
+        assertEquals("[[],\"list\",[true,[[null,[],\"123\"]],null],500,[[\"a\",[false],\"b\",\"c\"]]]", writer.toString());
     }
 
     @Test
@@ -172,7 +172,7 @@ public class DefaultJsonStreamingWriterTest {
         jsonWriter.writeName("result");
         jsonWriter.writeBoolean(true);
         jsonWriter.writeName("num");
-        jsonWriter.writeNumber(20923);
+        jsonWriter.writeNumber(20923f);
         jsonWriter.writeName("data");
         jsonWriter.writeNull();
         jsonWriter.writeName("status");
@@ -205,7 +205,7 @@ public class DefaultJsonStreamingWriterTest {
         jsonWriter.writeEnd();
         jsonWriter.writeEnd();
         jsonWriter.writeName("test");
-        jsonWriter.writeNumber(321);
+        jsonWriter.writeNumber(321f);
         jsonWriter.writeName("response");
         jsonWriter.writeBeginObject();
         jsonWriter.writeName("status");
@@ -222,7 +222,7 @@ public class DefaultJsonStreamingWriterTest {
         jsonWriter.writeEnd();
         jsonWriter.writeEnd();
         jsonWriter.writeEnd();
-        assertEquals("{\"data\":{\"null\":null,\"\":{},\"result\":{\"abc\":{\"a\":true,\"b\":\"c\"}}},\"test\":321.0,\"response\":{\"status\":200.0,\"message\":\"OK\"},\"x\":{\"y\":{\"z\":false}}}", writer.toString());
+        assertEquals("{\"data\":{\"null\":null,\"\":{},\"result\":{\"abc\":{\"a\":true,\"b\":\"c\"}}},\"test\":321.0,\"response\":{\"status\":200,\"message\":\"OK\"},\"x\":{\"y\":{\"z\":false}}}", writer.toString());
     }
 
     @Test

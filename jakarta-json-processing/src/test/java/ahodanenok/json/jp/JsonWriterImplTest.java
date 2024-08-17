@@ -149,7 +149,7 @@ public class JsonWriterImplTest {
         ));
         JsonWriter jsonWriter = new JsonWriterImpl(new DefaultJsonOutput(writer));
         jsonWriter.write(value);
-        assertEquals("[\"123\",[200.0,[\"result\",null],[],[[[true,-67.89]]]],500.0]", writer.toString());
+        assertEquals("[\"123\",[200,[\"result\",null],[],[[[true,-67.89]]]],500]", writer.toString());
     }
 
     @Test
@@ -183,7 +183,7 @@ public class JsonWriterImplTest {
         }});
         JsonWriter jsonWriter = new JsonWriterImpl(new DefaultJsonOutput(writer));
         jsonWriter.write(value);
-        assertEquals("{\"result\":true,\"num\":20923.0,\"data\":null,\"status\":\"ok\"}", writer.toString());
+        assertEquals("{\"result\":true,\"num\":20923,\"data\":null,\"status\":\"ok\"}", writer.toString());
     }
 
     @Test
@@ -202,7 +202,7 @@ public class JsonWriterImplTest {
             }}));
             put("test", new JsonNumberIntegerImpl(321));
             put("response", new JsonObjectImpl(new LinkedHashMap<>() {{
-                put("status", new JsonNumberIntegerImpl(200));
+                put("status", new JsonNumberDoubleImpl(200));
                 put("message", new JsonStringImpl("OK"));
             }}));
             put("x", new JsonObjectImpl(Map.of(
@@ -213,6 +213,6 @@ public class JsonWriterImplTest {
         }});
         JsonWriter jsonWriter = new JsonWriterImpl(new DefaultJsonOutput(writer));
         jsonWriter.write(value);
-        assertEquals("{\"data\":{\"null\":null,\"\":{},\"result\":{\"abc\":{\"a\":true,\"b\":\"c\"}}},\"test\":321.0,\"response\":{\"status\":200.0,\"message\":\"OK\"},\"x\":{\"y\":{\"z\":false}}}", writer.toString());
+        assertEquals("{\"data\":{\"null\":null,\"\":{},\"result\":{\"abc\":{\"a\":true,\"b\":\"c\"}}},\"test\":321,\"response\":{\"status\":200.0,\"message\":\"OK\"},\"x\":{\"y\":{\"z\":false}}}", writer.toString());
     }
 }

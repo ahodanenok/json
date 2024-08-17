@@ -2,6 +2,8 @@ package ahodanenok.json.writer;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.math.BigInteger;
+import java.math.BigDecimal;
 
 public interface JsonOutput extends Closeable {
 
@@ -19,7 +21,15 @@ public interface JsonOutput extends Closeable {
 
     void writeString(String s) throws IOException;
 
+    void writeNumber(int n) throws IOException;
+
+    void writeNumber(long n) throws IOException;
+
     void writeNumber(double n) throws IOException;
+
+    void writeNumber(BigInteger n) throws IOException;
+
+    void writeNumber(BigDecimal n) throws IOException;
 
     void writeBoolean(boolean b) throws IOException;
 

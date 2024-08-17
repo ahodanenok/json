@@ -1,6 +1,8 @@
 package ahodanenok.json.writer;
 
 import java.io.IOException;
+import java.math.BigInteger;
+import java.math.BigDecimal;
 import java.util.LinkedList;
 
 public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
@@ -117,7 +119,47 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
     }
 
     @Override
+    public void writeNumber(int num) {
+        prepareWriteOnValue();
+        try {
+            output.writeNumber(num);
+        } catch (IOException e) {
+            throw new JsonWriteIOException("Failed to writeNumber", e);
+        }
+    }
+
+    @Override
+    public void writeNumber(long num) {
+        prepareWriteOnValue();
+        try {
+            output.writeNumber(num);
+        } catch (IOException e) {
+            throw new JsonWriteIOException("Failed to writeNumber", e);
+        }
+    }
+
+    @Override
     public void writeNumber(double num) {
+        prepareWriteOnValue();
+        try {
+            output.writeNumber(num);
+        } catch (IOException e) {
+            throw new JsonWriteIOException("Failed to writeNumber", e);
+        }
+    }
+
+    @Override
+    public void writeNumber(BigInteger num) {
+        prepareWriteOnValue();
+        try {
+            output.writeNumber(num);
+        } catch (IOException e) {
+            throw new JsonWriteIOException("Failed to writeNumber", e);
+        }
+    }
+
+    @Override
+    public void writeNumber(BigDecimal num) {
         prepareWriteOnValue();
         try {
             output.writeNumber(num);

@@ -2,6 +2,8 @@ package ahodanenok.json.writer;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.math.BigInteger;
+import java.math.BigDecimal;
 
 public final class DefaultJsonOutput implements JsonOutput {
 
@@ -41,8 +43,24 @@ public final class DefaultJsonOutput implements JsonOutput {
         writer.write('"');
     }
 
+    public void writeNumber(int n) throws IOException {
+        writer.write(Integer.toString(n));
+    }
+
+    public void writeNumber(long n) throws IOException {
+        writer.write(Long.toString(n));
+    }
+
     public void writeNumber(double n) throws IOException {
-        writer.write(Double.toString(n)); // todo: does it format according to rfc
+        writer.write(Double.toString(n));
+    }
+
+    public void writeNumber(BigInteger n) throws IOException {
+        writer.write(n.toString());
+    }
+
+    public void writeNumber(BigDecimal n) throws IOException {
+        writer.write(n.toString());
     }
 
     public void writeBoolean(boolean b) throws IOException {

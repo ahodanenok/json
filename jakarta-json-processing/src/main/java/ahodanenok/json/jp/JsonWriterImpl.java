@@ -84,7 +84,17 @@ final class JsonWriterImpl implements JsonWriter {
         if (type.equals(ValueType.STRING)) {
             writer.writeString(((JsonString) value).getString());
         } else if (type.equals(ValueType.NUMBER)) {
-            writer.writeNumber(((JsonNumber) value).doubleValue());
+            if (value instanceof JsonNumberIntegerImpl n) {
+                writer.writeNumber(n.intValue());
+            } else if (value instanceof JsonNumberLongImpl n) {
+                writer.writeNumber(n.longValue());
+            } else if (value instanceof JsonNumberDoubleImpl n) {
+                writer.writeNumber(n.doubleValue());
+            } else if (value instanceof JsonNumberBigIntegerImpl n) {
+                writer.writeNumber(n.bigIntegerValue());
+            } else {
+                writer.writeNumber(((JsonNumber) value).bigDecimalValue());
+            }
         } else if (type.equals(ValueType.TRUE)) {
             writer.writeBoolean(true);
         } else if (type.equals(ValueType.FALSE)) {
