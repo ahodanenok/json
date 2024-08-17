@@ -377,63 +377,42 @@ public class DefaultJsonTokenizerTest {
 
     @ParameterizedTest
     @CsvSource({
-        "0,  0",
-        "-0,  0",
-        "0.0,  0",
-        "-0.000,  0",
-        "0e+100,  0",
-        "1,  1",
-        "1.0,  1",
-        "-1,  -1",
-        "-1.0,  -1",
-        "-1e5,  -100000",
-        "-1e-5,  -0.00001",
-        "123456.7890,  123456.789",
-        "-123456.7890,  -123456.789",
-        "52.378E+2,  5237.8",
-        "-731236.378E-4,  -73.1236378",
-        "321,  321",
-        "-321,  -321"
+        "0,     0",
+        "-0,     0",
+        "-1,     -1",
+        "5,     5",
+        "3216,     3216",
+        "120321521,     120321521",
+        "-235123672,     -235123672",
+        "2147483647,     2147483647",
+        "-2147483648,     -2147483648",
+        "1256930204123562,     1256930204123562",
+        "-20592123512353512,     -20592123512353512",
+        "-9223372036854775808,     -9223372036854775808",
+        "9223372036854775807,     9223372036854775807",
+        "9223372036854775765,      9223372036854775765",
+        "-9223372036854792931,     -9223372036854792931",
+        "18446744073709551616,     18446744073709551616",
+        "0.0,     0.0",
+        "-0.000,     0.000",
+        "0e+100,     0e+100",
+        "1.0,     1.0",
+        "-1.0,     -1.0",
+        "123456.7890,     123456.7890",
+        "-123456.7890,     -123456.7890",
+        "52.378E+2,     5237.8",
+        "-731236.378E-4,     -73.1236378",
+        "123456789012345678901234567890.1234567890,     123456789012345678901234567890.1234567890"
     })
-    public void testReadNumberAsDouble(String s, String n) throws Exception {
+    public void testReadNumber(String s, BigDecimal n) throws Exception {
         DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader(s));
         assertTrue(tokenizer.advance());
         assertEquals(TokenType.NUMBER, tokenizer.currentToken().getType());
         JsonNumberToken token = assertInstanceOf(JsonNumberToken.class, tokenizer.currentToken());
-        assertEquals(Double.parseDouble(n), token.doubleValue());
-        assertEquals(0, new BigDecimal(n).compareTo(token.bigDecimalValue()));
-        assertFalse(tokenizer.advance());
-    }
-
-    @ParameterizedTest
-    @CsvSource({
-        "0,  0",
-        "-0,  0",
-        "0.0,  0",
-        "-0.000,  0",
-        "0e+100,  0",
-        "1,  1",
-        "1.0,  1",
-        "-1,  -1",
-        "-1.0,  -1",
-        "-1e5,  -100000",
-        "-1e-5,  -0.00001",
-        "123456.7890,  123456.789",
-        "-123456.7890,  -123456.789",
-        "52.378E+2,  5237.8",
-        "-731236.378E-4,  -73.1236378",
-        "321,  321",
-        "-321,  -321"
-    })
-    public void testReadNumberAsBigDecimal(String s, String n) throws Exception {
-        JsonTokenizerConfig config = new JsonTokenizerConfig();
-        config.setUseBigDecimal(true);
-        DefaultJsonTokenizer tokenizer = new DefaultJsonTokenizer(new StringReader(s), config);
-        assertTrue(tokenizer.advance());
-        assertEquals(TokenType.NUMBER, tokenizer.currentToken().getType());
-        JsonNumberToken token = assertInstanceOf(JsonNumberToken.class, tokenizer.currentToken());
-        assertEquals(Double.parseDouble(n), token.doubleValue());
-        assertEquals(0, new BigDecimal(n).compareTo(token.bigDecimalValue()));
+        assertEquals(n.intValue(), token.intValue());
+        assertEquals(n.longValue(), token.longValue());
+        assertEquals(n.doubleValue(), token.doubleValue());
+        assertEquals(n, token.bigDecimalValue());
         assertFalse(tokenizer.advance());
     }
 

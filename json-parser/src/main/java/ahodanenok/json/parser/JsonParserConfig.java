@@ -21,12 +21,4 @@ public final class JsonParserConfig {
     public void setMaxNumberLength(int length) {
         tokenizerConfig.setMaxNumberLength(length);
     }
-
-    public boolean isUseBigDecimal() {
-        return tokenizerConfig.isUseBigDecimal();
-    }
-
-    public void setUseBigDecimal(boolean use) {
-        tokenizerConfig.setUseBigDecimal(use);
-    }
 }

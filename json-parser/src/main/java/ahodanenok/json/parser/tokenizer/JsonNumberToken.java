@@ -8,14 +8,60 @@ abstract class JsonNumberToken extends JsonToken {
         super(TokenType.NUMBER);
     }
 
-    final static class DoubleType extends JsonNumberToken {
+    final static class IntegerType extends JsonNumberToken {
 
-        private final double value;
+        private final int value;
         private final String representation;
 
-        DoubleType(double value, String representation) {
+        IntegerType(int value, String representation) {
             this.value = value;
             this.representation = representation;
+        }
+
+        @Override
+        public int intValue() {
+            return value;
+        }
+
+        @Override
+        public long longValue() {
+            return value;
+        }
+
+        @Override
+        public double doubleValue() {
+            return value;
+        }
+
+        @Override
+        public BigDecimal bigDecimalValue() {
+            return BigDecimal.valueOf(value);
+        }
+
+        @Override
+        public String getRepresentation() {
+            return representation;
+        }
+    }
+
+    final static class LongType extends JsonNumberToken {
+
+        private final long value;
+        private final String representation;
+
+        LongType(long value, String representation) {
+            this.value = value;
+            this.representation = representation;
+        }
+
+        @Override
+        public int intValue() {
+            return (int) value;
+        }
+
+        @Override
+        public long longValue() {
+            return value;
         }
 
         @Override
@@ -42,6 +88,16 @@ abstract class JsonNumberToken extends JsonToken {
         BigDecimalType(BigDecimal value, String representation) {
             this.value = value;
             this.representation = representation;
+        }
+
+        @Override
+        public int intValue() {
+            return value.intValue();
+        }
+
+        @Override
+        public long longValue() {
+            return value.longValue();
         }
 
         @Override

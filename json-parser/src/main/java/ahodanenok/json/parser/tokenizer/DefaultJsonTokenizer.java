@@ -294,6 +294,7 @@ public final class DefaultJsonTokenizer implements JsonTokenizer {
         buf.clear();
 
         int ch;
+        boolean integral = true;
         while (true) {
             ch = reader.read();
             if (ch == -1) {
@@ -320,6 +321,10 @@ public final class DefaultJsonTokenizer implements JsonTokenizer {
                 }
             }
 
+            if (ch == '.' || ch == 'e' || ch == 'E') {
+                integral = false;
+            }
+
             buf.put((char) ch);
         }
 
@@ -341,16 +346,25 @@ public final class DefaultJsonTokenizer implements JsonTokenizer {
 
         try {
             String representation = buf.flip().toString();
-            if (config.useBigDecimal) {
-                BigDecimal number = new BigDecimal(representation);
-                return new JsonNumberToken.BigDecimalType(number, representation);
-            } else {
-                double number = Double.parseDouble(representation);
-                if (number == -0.0) {
-                    number = 0.0;
+            if (integral) {
+                int length = representation.length();
+                if (representation.charAt(0) == '-') {
+                    length--;
                 }
-                return new JsonNumberToken.DoubleType(number, representation);
+
+                // try to not use BigDecimal for integer values if they are not very big
+                if (length < 10) { // Integer.MAX_VALUE - 10 digits
+                    int number = Integer.parseInt(representation, 10);
+                    return new JsonNumberToken.IntegerType(number, representation);
+                } else if (length < 19) { // Long.MAX_VALUE - 19 digits
+                    long number = Long.parseLong(representation, 10);
+                    return new JsonNumberToken.LongType(number, representation);
+                }
+                // todo: does parsing integer as BigInteger worth it than just falling back to BigDecimal?
             }
+
+            BigDecimal number = new BigDecimal(representation);
+            return new JsonNumberToken.BigDecimalType(number, representation);
         } catch (NumberFormatException e) {
             throw new JsonParseException(
                 String.format("Incorrect number '%s'", buf.toString()),

@@ -24,6 +24,16 @@ public abstract class JsonToken {
         return type;
     }
 
+    public int intValue() {
+        throw new UnsupportedOperationException(
+            String.format("Token of type '%s' is not a number", type));
+    }
+
+    public long longValue() {
+        throw new UnsupportedOperationException(
+            String.format("Token of type '%s' is not a number", type));
+    }
+
     public double doubleValue() {
         throw new UnsupportedOperationException(
             String.format("Token of type '%s' is not a number", type));

@@ -1,6 +1,7 @@
 package ahodanenok.json.parser;
 
 import java.io.Reader;
+import java.math.BigDecimal;
 import java.util.LinkedList;
 
 import ahodanenok.json.parser.tokenizer.DefaultJsonTokenizer;
@@ -178,6 +179,28 @@ public final class DefaultJsonStreamingParser implements JsonStreamingParser {
     }
 
     @Override
+    public int getInt() {
+        if (event != EventType.NUMBER) {
+            throw new IllegalStateException(String.format(
+                "Current event must be '%s', but was '%s'",
+                EventType.NUMBER, event));
+        }
+
+        return tokenizer.currentToken().intValue();
+    }
+
+    @Override
+    public long getLong() {
+        if (event != EventType.NUMBER) {
+            throw new IllegalStateException(String.format(
+                "Current event must be '%s', but was '%s'",
+                EventType.NUMBER, event));
+        }
+
+        return tokenizer.currentToken().longValue();
+    }
+
+    @Override
     public double getDouble() {
         if (event != EventType.NUMBER) {
             throw new IllegalStateException(String.format(
@@ -186,6 +209,17 @@ public final class DefaultJsonStreamingParser implements JsonStreamingParser {
         }
 
         return tokenizer.currentToken().doubleValue();
+    }
+
+    @Override
+    public BigDecimal getBigDecimal() {
+        if (event != EventType.NUMBER) {
+            throw new IllegalStateException(String.format(
+                "Current event must be '%s', but was '%s'",
+                EventType.NUMBER, event));
+        }
+
+        return tokenizer.currentToken().bigDecimalValue();
     }
 
     @Override

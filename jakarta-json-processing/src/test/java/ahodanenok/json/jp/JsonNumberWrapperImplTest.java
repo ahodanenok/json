@@ -20,7 +20,7 @@ public class JsonNumberWrapperImplTest {
     public void testNumberZero() {
         JsonNumber number = new JsonNumberWrapperImpl(ahodanenok.json.value.JsonNumber.of(0));
         assertEquals(JsonValue.ValueType.NUMBER, number.getValueType());
-        assertTrue(number.isIntegral());
+        assertFalse(number.isIntegral());
         assertEquals(0, number.intValue());
         assertEquals(0, number.intValueExact());
         assertEquals(0, number.longValue());
@@ -68,7 +68,7 @@ public class JsonNumberWrapperImplTest {
     public void testNumberPositiveIntegral() {
         JsonNumber number = new JsonNumberWrapperImpl(ahodanenok.json.value.JsonNumber.of(534823));
         assertEquals(JsonValue.ValueType.NUMBER, number.getValueType());
-        assertTrue(number.isIntegral());
+        assertFalse(number.isIntegral());
         assertEquals(534823, number.intValue());
         assertEquals(534823, number.intValueExact());
         assertEquals(534823, number.longValue());

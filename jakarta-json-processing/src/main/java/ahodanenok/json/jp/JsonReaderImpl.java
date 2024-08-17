@@ -106,7 +106,7 @@ final class JsonReaderImpl implements JsonReader {
         if (event == EventType.STRING) {
             return new JsonStringImpl(parser.getString());
         } else if (event == EventType.NUMBER) {
-            return new JsonNumberDoubleImpl(parser.getDouble());
+            return new JsonNumberBigDecimalImpl(parser.getBigDecimal());
         } else if (event == EventType.BOOLEAN) {
             return parser.getBoolean() ? JsonValue.TRUE : JsonValue.FALSE;
         } else if (event == EventType.NULL) {

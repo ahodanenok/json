@@ -7,8 +7,6 @@ public final class JsonTokenizerConfig {
     int maxStringLength = -1;
     int maxNumberLength = -1;
 
-    boolean useBigDecimal;
-
     public void setMaxStringLength(int length) {
         // todo: check valid
         this.maxStringLength = length;
@@ -17,13 +15,5 @@ public final class JsonTokenizerConfig {
     public void setMaxNumberLength(int length) {
         // todo: check valid
         this.maxNumberLength = length;
-    }
-
-    public boolean isUseBigDecimal() {
-        return useBigDecimal;
-    }
-
-    public void setUseBigDecimal(boolean use) {
-        this.useBigDecimal = use;
     }
 }

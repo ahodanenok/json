@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 public abstract class JsonNumber extends JsonValue {
 
     public static JsonNumber of(double value) {
-        return new JsonNumber.DoubleType(value);
+        return new JsonNumber.BigDecimalType(BigDecimal.valueOf(value));
     }
 
     public static JsonNumber of(BigDecimal value) {
@@ -16,28 +16,13 @@ public abstract class JsonNumber extends JsonValue {
         super(ValueType.NUMBER);
     }
 
+    public abstract int intValue();
+
+    public abstract long longValue();
+
     public abstract double doubleValue();
 
     public abstract BigDecimal bigDecimalValue();
-
-    final static class DoubleType extends JsonNumber {
-
-        private final double value;
-
-        public DoubleType(double value) {
-            this.value = value;
-        }
-
-        @Override
-        public double doubleValue() {
-            return value;
-        }
-
-        @Override
-        public BigDecimal bigDecimalValue() {
-            return BigDecimal.valueOf(value);
-        }
-    }
 
     final static class BigDecimalType extends JsonNumber {
 
@@ -45,6 +30,16 @@ public abstract class JsonNumber extends JsonValue {
 
         public BigDecimalType(BigDecimal value) {
             this.value = value;
+        }
+
+        @Override
+        public int intValue() {
+            return value.intValue();
+        }
+
+        @Override
+        public long longValue() {
+            return value.longValue();
         }
 
         @Override

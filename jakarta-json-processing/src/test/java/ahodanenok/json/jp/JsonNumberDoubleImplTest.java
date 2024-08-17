@@ -20,7 +20,7 @@ public class JsonNumberDoubleImplTest {
     public void testNumberZero() {
         JsonNumber number = new JsonNumberDoubleImpl(0);
         assertEquals(JsonValue.ValueType.NUMBER, number.getValueType());
-        assertTrue(number.isIntegral());
+        assertFalse(number.isIntegral());
         assertEquals(0, number.intValue());
         assertEquals(0, number.intValueExact());
         assertEquals(0, number.longValue());
@@ -68,7 +68,7 @@ public class JsonNumberDoubleImplTest {
     public void testNumberPositiveIntegral() {
         JsonNumber number = new JsonNumberDoubleImpl(534823);
         assertEquals(JsonValue.ValueType.NUMBER, number.getValueType());
-        assertTrue(number.isIntegral());
+        assertFalse(number.isIntegral());
         assertEquals(534823, number.intValue());
         assertEquals(534823, number.intValueExact());
         assertEquals(534823, number.longValue());

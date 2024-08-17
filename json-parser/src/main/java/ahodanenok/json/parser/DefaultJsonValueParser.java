@@ -52,11 +52,7 @@ public final class DefaultJsonValueParser implements JsonValueParser {
         if (token.getType().equals(TokenType.STRING)) {
             return JsonString.of(token.stringValue());
         } else if (token.getType().equals(TokenType.NUMBER)) {
-            if (config.isUseBigDecimal()) {
-                return JsonNumber.of(token.bigDecimalValue());
-            } else {
-                return JsonNumber.of(token.doubleValue());
-            }
+            return JsonNumber.of(token.bigDecimalValue());
         } else if (token.getType().equals(TokenType.NULL)) {
             return JsonValue.NULL;
         } else if (token.getType().equals(TokenType.TRUE)) {
