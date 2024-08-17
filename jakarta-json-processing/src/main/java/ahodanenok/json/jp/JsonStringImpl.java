@@ -42,7 +42,6 @@ final class JsonStringImpl implements JsonString {
 
     @Override
     public String toString() {
-        // todo: impl
-        return null;
+        return Utils.writeValueToString(this);
     }
 }
