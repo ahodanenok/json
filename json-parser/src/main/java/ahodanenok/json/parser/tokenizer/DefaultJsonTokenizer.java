@@ -347,9 +347,12 @@ public final class DefaultJsonTokenizer implements JsonTokenizer {
         try {
             String representation = buf.flip().toString();
             if (integral) {
-                int length = representation.length();
-                if (representation.charAt(0) == '-') {
-                    length--;
+                boolean negative = representation.charAt(0) == '-';
+                int length = negative ? representation.length() - 1 : representation.length();
+                if (length > 1) {
+                    if (negative && representation.charAt(1) == '0' || representation.charAt(0) == '0') {
+                        throw new NumberFormatException("Octal numbers are not supported");
+                    }
                 }
 
                 // try to not use BigDecimal for integer values if they are not very big
