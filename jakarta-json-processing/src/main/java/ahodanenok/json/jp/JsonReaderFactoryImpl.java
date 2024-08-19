@@ -4,7 +4,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.charset.CodingErrorAction;
 import java.util.Map;
 import java.util.Objects;
@@ -23,11 +22,7 @@ final class JsonReaderFactoryImpl implements JsonReaderFactory {
     @Override
     public JsonReader createReader(InputStream in) {
         Objects.requireNonNull(in);
-        return new JsonReaderImpl(new InputStreamReader(
-            in,
-            StandardCharsets.UTF_8.newDecoder()
-                .onMalformedInput(CodingErrorAction.REPORT)
-                .onUnmappableCharacter(CodingErrorAction.REPORT)));
+        return new DetectEncodingJsonReaderImpl(in, this::createReader);
     }
 
     @Override
