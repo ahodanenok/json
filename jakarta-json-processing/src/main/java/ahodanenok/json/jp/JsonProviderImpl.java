@@ -101,7 +101,7 @@ public final class JsonProviderImpl extends JsonProvider {
 
     @Override
     public JsonReaderFactory createReaderFactory(Map<String, ?> config) {
-        return defaultJsonReaderFactory;
+        return new JsonReaderFactoryImpl(config);
     }
 
     @Override

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import jakarta.json.JsonArray;
+import jakarta.json.JsonConfig;
 import jakarta.json.JsonException;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
@@ -22,11 +23,17 @@ import ahodanenok.json.parser.JsonStreamingParser;
 final class JsonReaderImpl implements JsonReader {
 
     private final Reader reader;
+    private JsonConfig.KeyStrategy keyStrategy;
     private boolean usable;
 
     JsonReaderImpl(Reader reader) {
         this.reader = reader;
+        this.keyStrategy = JsonConfig.KeyStrategy.LAST;
         this.usable = true;
+    }
+
+    void setKeyStrategy(JsonConfig.KeyStrategy keyStrategy) {
+        this.keyStrategy = keyStrategy;
     }
 
     @Override
@@ -128,8 +135,18 @@ final class JsonReaderImpl implements JsonReader {
                 break;
             } else if (parser.currentEvent() == EventType.OBJECT_KEY) {
                 String name = parser.getString();
+                if (keyStrategy == JsonConfig.KeyStrategy.NONE && values.containsKey(name)) {
+                    throw new JsonParsingException(
+                        String.format("Duplicate key '%s'", name), new JsonLocationImpl());
+                }
+
                 parserAdvance(parser, "todo");
-                values.put(name, doReadValue(parser));
+                JsonValue value = doReadValue(parser);
+                if (keyStrategy == JsonConfig.KeyStrategy.FIRST && values.containsKey(name)) {
+                    continue;
+                }
+
+                values.put(name, value);
             } else {
                 throw new JsonParsingException("todo", new JsonLocationImpl());
             }

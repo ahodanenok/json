@@ -8,15 +8,39 @@ import java.nio.charset.CodingErrorAction;
 import java.util.Map;
 import java.util.Objects;
 
+import jakarta.json.JsonConfig;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonReaderFactory;
 
 final class JsonReaderFactoryImpl implements JsonReaderFactory {
 
+    private JsonConfig.KeyStrategy keyStrategy;
+
+    JsonReaderFactoryImpl() {
+        init(Map.of());
+    }
+
+    JsonReaderFactoryImpl(Map<String, ?> config) {
+        init(config);
+    }
+
+    private void init(Map<String, ?> config) {
+        JsonConfig.KeyStrategy keyStrategy = (JsonConfig.KeyStrategy) config.get(JsonConfig.KEY_STRATEGY);
+        if (keyStrategy != null) {
+            this.keyStrategy = keyStrategy;
+        } else {
+            this.keyStrategy = JsonConfig.KeyStrategy.LAST;
+        }
+    }
+
     @Override
     public JsonReader createReader(Reader reader) {
         Objects.requireNonNull(reader);
-        return new JsonReaderImpl(reader);
+
+        JsonReaderImpl jsonReader = new JsonReaderImpl(reader);
+        jsonReader.setKeyStrategy(keyStrategy);
+
+        return jsonReader;
     }
 
     @Override
@@ -29,7 +53,7 @@ final class JsonReaderFactoryImpl implements JsonReaderFactory {
     public JsonReader createReader(InputStream in, Charset charset) {
         Objects.requireNonNull(in);
         Objects.requireNonNull(charset);
-        return new JsonReaderImpl(new InputStreamReader(
+        return createReader(new InputStreamReader(
             in,
             charset.newDecoder()
                 .onMalformedInput(CodingErrorAction.REPORT)
@@ -38,6 +62,6 @@ final class JsonReaderFactoryImpl implements JsonReaderFactory {
 
     @Override
     public Map<String, ?> getConfigInUse() {
-        return Map.of();
+        return Map.of(JsonConfig.KEY_STRATEGY, keyStrategy);
     }
 }
