@@ -208,11 +208,29 @@ public final class JsonProviderImpl extends JsonProvider {
     @Override
     public JsonNumber createValue(Number number) {
         if (number instanceof Byte) {
-            return new JsonNumberIntegerImpl(number.intValue());
+            return createValue(number.intValue());
         } else if (number instanceof Short) {
-            return new JsonNumberIntegerImpl(number.intValue());
+            return createValue(number.intValue());
+        } else if (number instanceof Integer) {
+            return createValue(number.intValue());
+        } else if (number instanceof Long) {
+            return createValue(number.longValue());
+        } else if (number instanceof Float) {
+            return new JsonNumberDoubleImpl(number.doubleValue());
+        } else if (number instanceof Double) {
+            return createValue(number.doubleValue());
+        } else if (number instanceof BigInteger) {
+            return createValue((BigInteger) number);
+        } else if (number instanceof BigDecimal) {
+            return createValue((BigDecimal) number);
         } else {
-            return super.createValue(number);
+            double dv = number.doubleValue();
+            long lv = number.longValue();
+            if ((double) lv == dv) {
+                return createValue(lv);
+            } else {
+                return createValue(dv);
+            }
         }
     }
 }
