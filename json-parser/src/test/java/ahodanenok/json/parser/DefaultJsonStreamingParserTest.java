@@ -33,16 +33,21 @@ public class DefaultJsonStreamingParserTest {
     @Test
     public void testParseNoContent() {
         JsonStreamingParser parser = new DefaultJsonStreamingParser(new StringReader(""));
+        assertFalse(parser.hasNext());
+        assertFalse(parser.hasNext());
         assertFalse(parser.next());
+        assertFalse(parser.hasNext());
     }
 
     @Test
     public void testParseEmptyString() {
         JsonStreamingParser parser = new DefaultJsonStreamingParser(new StringReader("\"\""));
+        assertTrue(parser.hasNext());
         assertTrue(parser.next());
         assertEquals(EventType.STRING, parser.currentEvent());
         assertEquals("", parser.getString());
         assertFalse(parser.next());
+        assertFalse(parser.hasNext());
     }
 
     @ParameterizedTest
@@ -128,8 +133,11 @@ public class DefaultJsonStreamingParserTest {
         JsonStreamingParser parser = new DefaultJsonStreamingParser(new StringReader("[]"));
         assertTrue(parser.next());
         assertEquals(EventType.BEGIN_ARRAY, parser.currentEvent());
+        assertTrue(parser.hasNext());
+        assertTrue(parser.hasNext());
         assertTrue(parser.next());
         assertEquals(EventType.END_ARRAY, parser.currentEvent());
+        assertFalse(parser.hasNext());
         assertFalse(parser.next());
     }
 
@@ -138,6 +146,8 @@ public class DefaultJsonStreamingParserTest {
         JsonStreamingParser parser = new DefaultJsonStreamingParser(new StringReader("[1.23, true, \"true\", null]"));
         assertTrue(parser.next());
         assertEquals(EventType.BEGIN_ARRAY, parser.currentEvent());
+        assertTrue(parser.hasNext());
+        assertTrue(parser.hasNext());
         assertTrue(parser.next());
         assertEquals(EventType.NUMBER, parser.currentEvent());
         assertEquals(1.23, parser.getDouble());
@@ -147,11 +157,13 @@ public class DefaultJsonStreamingParserTest {
         assertTrue(parser.next());
         assertEquals(EventType.STRING, parser.currentEvent());
         assertEquals("true", parser.getString());
+        assertTrue(parser.hasNext());
         assertTrue(parser.next());
         assertEquals(EventType.NULL, parser.currentEvent());
         assertEquals(true, parser.isNull());
         assertTrue(parser.next());
         assertEquals(EventType.END_ARRAY, parser.currentEvent());
+        assertFalse(parser.hasNext());
         assertFalse(parser.next());
     }
 
@@ -210,6 +222,7 @@ public class DefaultJsonStreamingParserTest {
         assertTrue(parser.next());
         assertEquals(EventType.STRING, parser.currentEvent());
         assertEquals("x", parser.getString());
+        assertTrue(parser.hasNext());
         assertTrue(parser.next());
         assertEquals(EventType.BEGIN_ARRAY, parser.currentEvent());
         assertTrue(parser.next());
@@ -219,6 +232,9 @@ public class DefaultJsonStreamingParserTest {
         assertEquals(EventType.BEGIN_ARRAY, parser.currentEvent());
         assertTrue(parser.next());
         assertEquals(EventType.BEGIN_ARRAY, parser.currentEvent());
+        assertTrue(parser.hasNext());
+        assertTrue(parser.hasNext());
+        assertTrue(parser.hasNext());
         assertTrue(parser.next());
         assertEquals(EventType.BEGIN_ARRAY, parser.currentEvent());
         assertTrue(parser.next());
@@ -234,6 +250,7 @@ public class DefaultJsonStreamingParserTest {
         assertEquals(EventType.END_ARRAY, parser.currentEvent());
         assertTrue(parser.next());
         assertEquals(EventType.END_ARRAY, parser.currentEvent());
+        assertTrue(parser.hasNext());
         assertTrue(parser.next());
         assertEquals(EventType.END_ARRAY, parser.currentEvent());
         assertFalse(parser.next());

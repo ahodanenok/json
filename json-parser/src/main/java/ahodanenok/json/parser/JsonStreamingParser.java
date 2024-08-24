@@ -4,9 +4,13 @@ import java.math.BigDecimal;
 
 public interface JsonStreamingParser {
 
+    boolean hasNext();
+
     boolean next();
 
     EventType currentEvent();
+
+    String getToken();
 
     String getString();
 
