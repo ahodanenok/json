@@ -1,6 +1,7 @@
 package ahodanenok.json.jp;
 
 import java.io.StringReader;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
@@ -9,7 +10,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
 import jakarta.json.JsonNumber;
+import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
 import jakarta.json.stream.JsonParser;
 
@@ -672,15 +676,15 @@ public class JsonParserImplTest {
         JsonParser parser = new JsonParserImpl(new StringReader("""
             [123, true]
         """));
-        parser.next();
+        // parser.next();
         Stream<JsonValue> stream = parser.getValueStream();
         assertTrue(parser.hasNext());
         JsonValue[] values = stream.toArray(JsonValue[]::new);
-        assertFalse(parser.hasNext());
         assertEquals(1, values.length);
         assertEquals(2, values[0].asJsonArray().size());
         assertEquals(123, values[0].asJsonArray().getInt(0));
         assertEquals(true, values[0].asJsonArray().getBoolean(1));
+        assertFalse(parser.hasNext());
     }
 
     @Test
@@ -691,37 +695,142 @@ public class JsonParserImplTest {
         assertEquals(JsonParser.Event.START_OBJECT, parser.next());
         assertEquals(JsonParser.Event.KEY_NAME, parser.next());
         assertEquals(JsonParser.Event.START_ARRAY, parser.next());
-        JsonValue value = parser.getArray();
-        assertEquals(3, value.asJsonArray().size());
-        assertEquals(1, value.asJsonArray().getInt(0));
-        assertEquals(2, value.asJsonArray().getInt(1));
-        assertEquals(3, value.asJsonArray().getInt(2));
+        JsonArray array = parser.getArray();
+        assertEquals(3, array.size());
+        assertEquals(1, array.getInt(0));
+        assertEquals(2, array.getInt(1));
+        assertEquals(3, array.getInt(2));
+        assertEquals(JsonParser.Event.END_ARRAY, parser.currentEvent());
         assertEquals(JsonParser.Event.END_OBJECT, parser.next());
         assertFalse(parser.hasNext());
     }
 
-    // @Test
-    // public void testParseJsonArrayStream() {
-    //     JsonParser parser = new JsonParserImpl(new StringReader("""
-    //         {\"a\": [1, 2, 3] }
-    //     """));
-    //     assertEquals(JsonParser.Event.START_OBJECT, parser.next());
-    //     assertEquals(JsonParser.Event.KEY_NAME, parser.next());
-    //     assertEquals(JsonParser.Event.START_ARRAY, parser.next());
-    //     JsonValue[] values = parser.getArrayStream().toArray(JsonValue[]::new);
-    //     assertEquals(JsonParser.Event.START_ARRAY, parser.currentEvent());
-    //     assertEquals(3, values.length);
-    //     assertEquals(1, ((JsonNumber) values[0]).intValue());
-    //     assertEquals(2, ((JsonNumber) values[1]).intValue());
-    //     assertEquals(3, ((JsonNumber) values[2]).intValue());
-    //     assertEquals(JsonParser.Event.END_OBJECT, parser.next());
-    //     assertFalse(parser.hasNext());
-    // }
+    @Test
+    public void testParseJsonArrayStream() {
+        JsonParser parser = new JsonParserImpl(new StringReader("""
+            {\"a\": [1, 2, 3, [true], {\"x\":false},\"abc\"] }
+        """));
+        assertEquals(JsonParser.Event.START_OBJECT, parser.next());
+        assertEquals(JsonParser.Event.KEY_NAME, parser.next());
+        assertEquals(JsonParser.Event.START_ARRAY, parser.next());
+        Stream<JsonValue> stream = parser.getArrayStream();
+        assertEquals(JsonParser.Event.START_ARRAY, parser.currentEvent());
+        JsonValue[] values = stream.toArray(JsonValue[]::new);
+        assertEquals(6, values.length);
+        assertEquals(1, ((JsonNumber) values[0]).intValue());
+        assertEquals(2, ((JsonNumber) values[1]).intValue());
+        assertEquals(3, ((JsonNumber) values[2]).intValue());
+        assertEquals(1, values[3].asJsonArray().size());
+        assertEquals(true, values[3].asJsonArray().getBoolean(0));
+        assertEquals(1, values[4].asJsonObject().size());
+        assertEquals(false, values[4].asJsonObject().getBoolean("x"));
+        assertEquals("abc", ((JsonString) values[5]).getString());
+        assertEquals(JsonParser.Event.END_ARRAY, parser.currentEvent());
+        assertEquals(JsonParser.Event.END_OBJECT, parser.next());
+        assertFalse(parser.hasNext());
+    }
 
-    // @Test
-    // public void testParseJsonObject() {
-    //     JsonParser parser = new JsonParserImpl(new StringReader("""
-    //     """));
+    @Test
+    public void testParseJsonArrayStreamSkipArray() {
+        JsonParser parser = new JsonParserImpl(new StringReader("""
+            {\"a\": [1, 2, 3, [true], {\"x\":false},\"abc\"] }
+        """));
+        assertEquals(JsonParser.Event.START_OBJECT, parser.next());
+        assertEquals(JsonParser.Event.KEY_NAME, parser.next());
+        assertEquals(JsonParser.Event.START_ARRAY, parser.next());
+        Stream<JsonValue> stream = parser.getArrayStream();
+        assertEquals(JsonParser.Event.START_ARRAY, parser.currentEvent());
+        JsonValue[] values = stream.limit(2).toArray(JsonValue[]::new);
+        assertEquals(2, values.length);
+        assertEquals(1, ((JsonNumber) values[0]).intValue());
+        assertEquals(2, ((JsonNumber) values[1]).intValue());
+        assertEquals(JsonParser.Event.VALUE_NUMBER, parser.currentEvent());
+        assertEquals(2, parser.getInt());
+        parser.skipArray();
+        assertEquals(JsonParser.Event.END_ARRAY, parser.currentEvent());
+        assertEquals(JsonParser.Event.END_OBJECT, parser.next());
+        assertFalse(parser.hasNext());
+    }
 
-    // }
+    @Test
+    public void testParseJsonObject() {
+        JsonParser parser = new JsonParserImpl(new StringReader("""
+            [{\"a\":11,\"b\":12,\"c\":{\"cc\":13},\"d\":14}, 100]
+        """));
+        assertTrue(parser.hasNext());
+        assertEquals(JsonParser.Event.START_ARRAY, parser.next());
+        assertEquals(JsonParser.Event.START_OBJECT, parser.next());
+        JsonObject object = parser.getObject();
+        assertEquals(4, object.size());
+        assertEquals(11, object.getInt("a"));
+        assertEquals(12, object.getInt("b"));
+        assertEquals(1, object.getJsonObject("c").size());
+        assertEquals(13, object.getJsonObject("c").getInt("cc"));
+        assertEquals(14, object.getInt("d"));
+        assertEquals(JsonParser.Event.END_OBJECT, parser.currentEvent());
+        assertEquals(JsonParser.Event.VALUE_NUMBER, parser.next());
+        assertEquals(100, parser.getInt());
+        assertEquals(JsonParser.Event.END_ARRAY, parser.next());
+        assertFalse(parser.hasNext());
+    }
+
+    @Test
+    public void testParseJsonObjectStream() {
+        JsonParser parser = new JsonParserImpl(new StringReader("""
+            [{\"a\":11,\"b\":12,\"c\":{\"cc\":13},\"d\":14}, 100]
+        """));
+        assertTrue(parser.hasNext());
+        assertEquals(JsonParser.Event.START_ARRAY, parser.next());
+        assertEquals(JsonParser.Event.START_OBJECT, parser.next());
+        Stream<Map.Entry<String, JsonValue>> stream = parser.getObjectStream();
+        assertEquals(JsonParser.Event.START_OBJECT, parser.currentEvent());
+        @SuppressWarnings("unchecked")
+        Map.Entry<String, JsonValue>[] values = stream
+            .sorted((a, b) -> a.getKey().compareTo(b.getKey()))
+            .toArray(Map.Entry[]::new);
+        assertEquals(4, values.length);
+        assertEquals("a", values[0].getKey());
+        assertEquals(11, ((JsonNumber) values[0].getValue()).intValue());
+        assertEquals("b", values[1].getKey());
+        assertEquals(12, ((JsonNumber) values[1].getValue()).intValue());
+        assertEquals(1, values[2].getValue().asJsonObject().size());
+        assertEquals(13, values[2].getValue().asJsonObject().getInt("cc"));
+        assertEquals("d", values[3].getKey());
+        assertEquals(14, ((JsonNumber) values[3].getValue()).intValue());
+        assertEquals(JsonParser.Event.END_OBJECT, parser.currentEvent());
+        assertEquals(JsonParser.Event.VALUE_NUMBER, parser.next());
+        assertEquals(100, parser.getInt());
+        assertEquals(JsonParser.Event.END_ARRAY, parser.next());
+        assertFalse(parser.hasNext());
+    }
+
+    @Test
+    public void testParseJsonObjectStreamSkipObject() {
+        JsonParser parser = new JsonParserImpl(new StringReader("""
+            [{\"a\":11,\"b\":12,\"c\":{\"cc\":13},\"d\":14}, 100]
+        """));
+        assertTrue(parser.hasNext());
+        assertEquals(JsonParser.Event.START_ARRAY, parser.next());
+        assertEquals(JsonParser.Event.START_OBJECT, parser.next());
+        Stream<Map.Entry<String, JsonValue>> stream = parser.getObjectStream();
+        assertEquals(JsonParser.Event.START_OBJECT, parser.currentEvent());
+        @SuppressWarnings("unchecked")
+        Map.Entry<String, JsonValue>[] values = stream
+            .limit(2)
+            .sorted((a, b) -> a.getKey().compareTo(b.getKey()))
+            .toArray(Map.Entry[]::new);
+        assertEquals(2, values.length);
+        assertEquals("a", values[0].getKey());
+        assertEquals(11, ((JsonNumber) values[0].getValue()).intValue());
+        assertEquals("b", values[1].getKey());
+        assertEquals(12, ((JsonNumber) values[1].getValue()).intValue());
+        assertEquals(JsonParser.Event.VALUE_NUMBER, parser.currentEvent());
+        assertEquals(12, parser.getInt());
+        parser.skipObject();
+        assertEquals(JsonParser.Event.END_OBJECT, parser.currentEvent());
+        assertEquals(JsonParser.Event.VALUE_NUMBER, parser.next());
+        assertEquals(100, parser.getInt());
+        assertEquals(JsonParser.Event.END_ARRAY, parser.next());
+        assertFalse(parser.hasNext());
+    }
 }

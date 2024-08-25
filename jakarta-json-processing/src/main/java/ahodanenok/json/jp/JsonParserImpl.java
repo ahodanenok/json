@@ -29,18 +29,14 @@ import ahodanenok.json.parser.JsonStreamingParser;
 
 final class JsonParserImpl implements JsonParser {
 
-    // enum State { INITIAL, VALUE_READ, VALUE_PENDING, FINISHED }
-
     private final Reader reader;
     private final JsonStreamingParser parser;
-    // private State state;
     private int arrayContext;
     private int objectContext;
 
     JsonParserImpl(Reader reader) {
         this.reader = reader;
         this.parser = new DefaultJsonStreamingParser(reader);
-        // this.state = State.INITIAL;
         this.arrayContext = 0;
         this.objectContext = 0;
     }
@@ -63,10 +59,8 @@ final class JsonParserImpl implements JsonParser {
         try {
             boolean advanced = parser.next();
             if (!advanced) {
-                // state = State.FINISHED;
                 return false;
             }
-            // state = State.VALUE_READ;
 
             EventType event = parser.currentEvent();
             if (event == EventType.BEGIN_ARRAY) {
@@ -267,14 +261,32 @@ final class JsonParserImpl implements JsonParser {
             Spliterators.spliteratorUnknownSize(
                 new Iterator<>() {
 
+                    boolean moveForward = true;
+
                     @Override
                     public boolean hasNext() {
-                        return JsonParserImpl.this.hasNext();
+                        boolean hasNext = JsonParserImpl.this.hasNext();
+                        if (!hasNext) {
+                            return false;
+                        }
+
+                        advance();
+                        moveForward = false;
+                        if (parser.currentEvent() == EventType.END_ARRAY) {
+                            return false;
+                        }
+
+                        return true;
                     }
 
                     @Override
                     public JsonValue next() {
-                        advance();
+                        if (moveForward) {
+                            if (!advance()) {
+                                throw new NoSuchElementException("No more elements");
+                            }
+                        }
+                        moveForward = true;
                         return doReadValue();
                     }
                 }, Spliterator.IMMUTABLE | Spliterator.ORDERED | Spliterator.NONNULL
@@ -292,15 +304,35 @@ final class JsonParserImpl implements JsonParser {
             Spliterators.spliteratorUnknownSize(
                 new Iterator<>() {
 
+                    boolean moveForward = true;
+
                     @Override
                     public boolean hasNext() {
-                        return JsonParserImpl.this.hasNext();
+                        boolean hasNext = JsonParserImpl.this.hasNext();
+                        if (!hasNext) {
+                            return false;
+                        }
+
+                        advance();
+                        moveForward = false;
+                        if (parser.currentEvent() == EventType.END_OBJECT) {
+                            return false;
+                        }
+
+                        return true;
                     }
 
                     @Override
                     public Map.Entry<String, JsonValue> next() {
+                        if (moveForward) {
+                            if (!advance()) {
+                                throw new NoSuchElementException("No more elements");
+                            }
+                        }
+                        String name = parser.getString();
+                        moveForward = true;
                         advance();
-                        return new SimpleEntry<>(parser.getString(), doReadValue());
+                        return new SimpleEntry<>(name, doReadValue());
                     }
                 },
                 Spliterator.IMMUTABLE | Spliterator.ORDERED | Spliterator.NONNULL
@@ -310,7 +342,7 @@ final class JsonParserImpl implements JsonParser {
 
     @Override
     public Stream<JsonValue> getValueStream() {
-        if (objectContext > 1 || arrayContext > 1) {
+        if (objectContext > 0 || arrayContext > 0) {
             throw new IllegalStateException("Parser is in an array or object");
         }
 
@@ -325,6 +357,10 @@ final class JsonParserImpl implements JsonParser {
 
                     @Override
                     public JsonValue next() {
+                        if (!advance()) {
+                            throw new NoSuchElementException("No more elements");
+                        }
+
                         return getValue();
                     }
                 },
