@@ -92,7 +92,7 @@ public class JsonParserImplTest {
     public void testParseNull() {
         JsonParser parser = new JsonParserImpl(new StringReader("null"));
         assertTrue(parser.hasNext());
-        assertThrows(IllegalStateException.class, () -> parser.currentEvent());
+        assertEquals(null, parser.currentEvent());
         assertEquals(JsonParser.Event.VALUE_NULL, parser.next());
         assertEquals(JsonParser.Event.VALUE_NULL, parser.currentEvent());
         assertThrows(NoSuchElementException.class, () -> parser.next());
@@ -102,7 +102,7 @@ public class JsonParserImplTest {
     @Test
     public void testParseTrue() {
         JsonParser parser = new JsonParserImpl(new StringReader("true"));
-        assertThrows(IllegalStateException.class, () -> parser.currentEvent());
+        assertEquals(null, parser.currentEvent());
         assertEquals(JsonParser.Event.VALUE_TRUE, parser.next());
         assertEquals(JsonParser.Event.VALUE_TRUE, parser.currentEvent());
         assertThrows(NoSuchElementException.class, () -> parser.next());

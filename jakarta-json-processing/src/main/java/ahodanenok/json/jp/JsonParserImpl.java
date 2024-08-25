@@ -85,7 +85,11 @@ final class JsonParserImpl implements JsonParser {
 
     @Override
     public JsonParser.Event currentEvent() {
-        return translateEvent(parser.currentEvent());
+        try {
+            return translateEvent(parser.currentEvent());
+        } catch (IllegalStateException e) {
+            return null;
+        }
     }
 
     private JsonParser.Event translateEvent(EventType eventType) {
