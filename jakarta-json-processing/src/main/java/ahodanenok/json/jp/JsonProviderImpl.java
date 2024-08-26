@@ -37,26 +37,28 @@ public final class JsonProviderImpl extends JsonProvider {
     private final JsonReaderFactory defaultJsonReaderFactory;
     private final JsonWriterFactory defaultJsonWriterFactory;
     private final JsonBuilderFactory defaultJsonBuilderFactory;
+    private final JsonParserFactory defaultJsonParserFactory;
 
     public JsonProviderImpl() {
         defaultJsonReaderFactory = new JsonReaderFactoryImpl();
         defaultJsonWriterFactory = new JsonWriterFactoryImpl();
         defaultJsonBuilderFactory = new JsonBuilderFactoryImpl();
+        defaultJsonParserFactory = new JsonParserFactoryImpl();
     }
 
     @Override
     public JsonParser createParser(Reader reader) {
-        return null;
+        return defaultJsonParserFactory.createParser(reader);
     }
 
     @Override
     public JsonParser createParser(InputStream in) {
-        return null;
+        return defaultJsonParserFactory.createParser(in);
     }
 
     @Override
     public JsonParserFactory createParserFactory(Map<String, ?> config) {
-        return null;
+        return defaultJsonParserFactory;
     }
 
     @Override
