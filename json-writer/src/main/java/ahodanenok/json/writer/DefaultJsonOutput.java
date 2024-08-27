@@ -39,7 +39,34 @@ public final class DefaultJsonOutput implements JsonOutput {
 
     public void writeString(String s) throws IOException {
         writer.write('"');
-        writer.write(s); // todo: escape
+        char ch;
+        for (int i = 0, n = s.length(); i < n; i++) {
+            ch = s.charAt(i);
+            if (ch == '"') {
+                writer.write('\\');
+                writer.write('"');
+            } else if (ch == '/') {
+                writer.write('\\');
+                writer.write('/');
+            } else if (ch == '\b') {
+                writer.write('\\');
+                writer.write('b');
+            } else if (ch == '\f') {
+                writer.write('\\');
+                writer.write('f');
+            } else if (ch == '\n') {
+                writer.write('\\');
+                writer.write('n');
+            } else if (ch == '\r') {
+                writer.write('\\');
+                writer.write('r');
+            } else if (ch == '\t') {
+                writer.write('\\');
+                writer.write('t');
+            } else {
+                writer.write(ch);
+            }
+        }
         writer.write('"');
     }
 
