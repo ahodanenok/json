@@ -28,4 +28,6 @@ public interface JsonStreamingWriter {
     void writeBoolean(boolean bool);
 
     void writeNull();
+
+    void close();
 }

@@ -188,6 +188,19 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
         }
     }
 
+    @Override
+    public void close() {
+        if (contexts.peek().type != ContextType.ROOT) {
+            throw new JsonWriteException("Incomplete json");
+        }
+
+        try {
+            output.close();
+        } catch (IOException e) {
+            throw new JsonWriteIOException("Failed to close output", e);
+        }
+    }
+
     private void prepareWriteOnValue() {
         WriteContext context = contexts.peek();
         if (context == null) {

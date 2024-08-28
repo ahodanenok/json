@@ -98,6 +98,10 @@ public final class DefaultJsonOutput implements JsonOutput {
         writer.write("null");
     }
 
+    public void flush() throws IOException {
+        writer.flush();
+    }
+
     public void close() throws IOException {
         writer.close();
     }
