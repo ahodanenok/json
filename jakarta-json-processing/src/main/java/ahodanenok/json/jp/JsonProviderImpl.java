@@ -38,12 +38,14 @@ public final class JsonProviderImpl extends JsonProvider {
     private final JsonWriterFactory defaultJsonWriterFactory;
     private final JsonBuilderFactory defaultJsonBuilderFactory;
     private final JsonParserFactory defaultJsonParserFactory;
+    private final JsonGeneratorFactory defaultJsonGeneratorFactory;
 
     public JsonProviderImpl() {
         defaultJsonReaderFactory = new JsonReaderFactoryImpl();
         defaultJsonWriterFactory = new JsonWriterFactoryImpl();
         defaultJsonBuilderFactory = new JsonBuilderFactoryImpl();
         defaultJsonParserFactory = new JsonParserFactoryImpl();
+        defaultJsonGeneratorFactory = new JsonGeneratorFactoryImpl();
     }
 
     @Override
@@ -63,17 +65,17 @@ public final class JsonProviderImpl extends JsonProvider {
 
     @Override
     public JsonGenerator createGenerator(Writer writer) {
-        return null;
+        return defaultJsonGeneratorFactory.createGenerator(writer);
     }
 
     @Override
     public JsonGenerator createGenerator(OutputStream out) {
-        return null;
+        return defaultJsonGeneratorFactory.createGenerator(out);
     }
 
     @Override
     public JsonGeneratorFactory createGeneratorFactory(Map<String, ?> config) {
-        return null;
+        return defaultJsonGeneratorFactory;
     }
 
     @Override
