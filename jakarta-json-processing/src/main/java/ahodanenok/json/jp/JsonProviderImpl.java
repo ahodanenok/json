@@ -75,7 +75,7 @@ public final class JsonProviderImpl extends JsonProvider {
 
     @Override
     public JsonGeneratorFactory createGeneratorFactory(Map<String, ?> config) {
-        return defaultJsonGeneratorFactory;
+        return new JsonGeneratorFactoryImpl(config);
     }
 
     @Override
