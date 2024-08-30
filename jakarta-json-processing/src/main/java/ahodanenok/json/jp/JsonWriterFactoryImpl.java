@@ -6,15 +6,46 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
+import jakarta.json.stream.JsonGenerator;
 
 import ahodanenok.json.writer.DefaultJsonOutput;
 
 final class JsonWriterFactoryImpl implements JsonWriterFactory {
+
+    private final boolean prettyPrinting;
+    private final Map<String, Object> configInUse;
+
+    JsonWriterFactoryImpl() {
+        this(Map.of());
+    }
+
+    JsonWriterFactoryImpl(Map<String, ?> config) {
+        Object prettyPrinting = config.get(JsonGenerator.PRETTY_PRINTING);
+        if (prettyPrinting instanceof Boolean) {
+            this.prettyPrinting = (boolean) prettyPrinting;
+        } else {
+            this.prettyPrinting = false;
+        }
+
+        this.configInUse = createConfigInUse(config.keySet());
+    }
+
+    private Map<String, Object> createConfigInUse(Set<String> configKeys) {
+        Map<String, Object> configInUse = new HashMap<>();
+        if (configKeys.contains(JsonGenerator.PRETTY_PRINTING)) {
+            configInUse.put(JsonGenerator.PRETTY_PRINTING, this.prettyPrinting);
+        }
+
+        return configInUse;
+    }
 
     @Override
     public JsonWriter createWriter(Writer writer) {
@@ -45,6 +76,6 @@ final class JsonWriterFactoryImpl implements JsonWriterFactory {
 
     @Override
     public Map<String, ?> getConfigInUse() {
-        return Map.of();
+        return Collections.unmodifiableMap(configInUse);
     }
 }
