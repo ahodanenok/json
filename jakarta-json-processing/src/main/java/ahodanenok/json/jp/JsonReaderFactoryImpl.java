@@ -5,8 +5,11 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.charset.CodingErrorAction;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import jakarta.json.JsonConfig;
 import jakarta.json.JsonReader;
@@ -14,23 +17,31 @@ import jakarta.json.JsonReaderFactory;
 
 final class JsonReaderFactoryImpl implements JsonReaderFactory {
 
-    private JsonConfig.KeyStrategy keyStrategy;
+    private final JsonConfig.KeyStrategy keyStrategy;
+    private final Map<String, Object> configInUse;
 
     JsonReaderFactoryImpl() {
-        init(Map.of());
+        this(Map.of());
     }
 
     JsonReaderFactoryImpl(Map<String, ?> config) {
-        init(config);
-    }
-
-    private void init(Map<String, ?> config) {
         JsonConfig.KeyStrategy keyStrategy = (JsonConfig.KeyStrategy) config.get(JsonConfig.KEY_STRATEGY);
         if (keyStrategy != null) {
             this.keyStrategy = keyStrategy;
         } else {
             this.keyStrategy = JsonConfig.KeyStrategy.LAST;
         }
+
+        this.configInUse = createConfigInUse(config.keySet());
+    }
+
+    private Map<String, Object> createConfigInUse(Set<String> configKeys) {
+        Map<String, Object> configInUse = new HashMap<>();
+        if (configKeys.contains(JsonConfig.KEY_STRATEGY)) {
+            configInUse.put(JsonConfig.KEY_STRATEGY, this.keyStrategy);
+        }
+
+        return configInUse;
     }
 
     @Override
@@ -62,6 +73,6 @@ final class JsonReaderFactoryImpl implements JsonReaderFactory {
 
     @Override
     public Map<String, ?> getConfigInUse() {
-        return Map.of(JsonConfig.KEY_STRATEGY, keyStrategy);
+        return Collections.unmodifiableMap(configInUse);
     }
 }
