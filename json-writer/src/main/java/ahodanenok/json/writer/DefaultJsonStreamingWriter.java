@@ -140,6 +140,12 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
 
     @Override
     public void writeNumber(double num) {
+        if (Double.isNaN(num)) {
+            throw new NumberFormatException("Illegal number: NaN");
+        } else if (num == Double.POSITIVE_INFINITY || num == Double.NEGATIVE_INFINITY) {
+            throw new NumberFormatException("Illegal number: Infinity");
+        }
+
         prepareWriteOnValue();
         try {
             output.writeNumber(num);
