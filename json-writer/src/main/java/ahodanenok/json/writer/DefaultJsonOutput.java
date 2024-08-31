@@ -45,24 +45,28 @@ public final class DefaultJsonOutput implements JsonOutput {
             if (ch == '"') {
                 writer.write('\\');
                 writer.write('"');
-            } else if (ch == '/') {
+            } else if (ch == '\\') {
                 writer.write('\\');
-                writer.write('/');
-            } else if (ch == '\b') {
                 writer.write('\\');
-                writer.write('b');
-            } else if (ch == '\f') {
-                writer.write('\\');
-                writer.write('f');
-            } else if (ch == '\n') {
-                writer.write('\\');
-                writer.write('n');
-            } else if (ch == '\r') {
-                writer.write('\\');
-                writer.write('r');
-            } else if (ch == '\t') {
-                writer.write('\\');
-                writer.write('t');
+            } else if (ch < 0x20) {
+                if (ch == '\b') {
+                    writer.write('\\');
+                    writer.write('b');
+                } else if (ch == '\f') {
+                    writer.write('\\');
+                    writer.write('f');
+                } else if (ch == '\n') {
+                    writer.write('\\');
+                    writer.write('n');
+                } else if (ch == '\r') {
+                    writer.write('\\');
+                    writer.write('r');
+                } else if (ch == '\t') {
+                    writer.write('\\');
+                    writer.write('t');
+                } else {
+                    writer.write(String.format("\\u%04x", (int) ch));
+                }
             } else {
                 writer.write(ch);
             }
