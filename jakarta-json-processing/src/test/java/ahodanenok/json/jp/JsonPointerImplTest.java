@@ -236,4 +236,57 @@ public class JsonPointerImplTest {
         assertEquals("test", result.get("x").asJsonObject().get("y").asJsonObject().getString("z"));
         assertEquals(JsonValue.TRUE, result.get("z"));
     }
+
+    @Test
+    public void testContainsValueArray() {
+        JsonArray array = new JsonArrayImpl(List.of(JsonValue.TRUE, new JsonNumberIntegerImpl(123)));
+        assertEquals(true, new JsonPointerImpl("").containsValue(array));
+        assertEquals(true, new JsonPointerImpl("/0").containsValue(array));
+        assertEquals(true, new JsonPointerImpl("/1").containsValue(array));
+        assertEquals(false, new JsonPointerImpl("/-1").containsValue(array));
+        assertEquals(false, new JsonPointerImpl("/2").containsValue(array));
+        assertEquals(false, new JsonPointerImpl("/-").containsValue(array));
+        assertEquals(false, new JsonPointerImpl("/x").containsValue(array));
+    }
+
+    @Test
+    public void testContainsValueObject() {
+        JsonObject object = new JsonObjectImpl(Map.of(
+            "a", new JsonStringImpl("test"),
+            "b", JsonValue.NULL
+        ));
+        assertEquals(true, new JsonPointerImpl("").containsValue(object));
+        assertEquals(true, new JsonPointerImpl("/a").containsValue(object));
+        assertEquals(true, new JsonPointerImpl("/b").containsValue(object));
+        assertEquals(false, new JsonPointerImpl("/A").containsValue(object));
+        assertEquals(false, new JsonPointerImpl("/-").containsValue(object));
+        assertEquals(false, new JsonPointerImpl("/0").containsValue(object));
+    }
+
+    @Test
+    public void testGetValueArray() {
+        JsonArray array = new JsonArrayImpl(List.of(
+            new JsonNumberIntegerImpl(123),
+            JsonValue.TRUE,
+            new JsonStringImpl("abc")));
+        assertEquals(array, new JsonPointerImpl("").getValue(array));
+        assertEquals(new JsonNumberIntegerImpl(123), new JsonPointerImpl("/0").getValue(array));
+        assertEquals(JsonValue.TRUE, new JsonPointerImpl("/1").getValue(array));
+        assertEquals(new JsonStringImpl("abc"), new JsonPointerImpl("/2").getValue(array));
+        assertThrows(JsonException.class, () -> new JsonPointerImpl("/3").getValue(array));
+        assertThrows(JsonException.class, () -> new JsonPointerImpl("/-").getValue(array));
+        assertThrows(JsonException.class, () -> new JsonPointerImpl("/abc").getValue(array));
+    }
+
+    @Test
+    public void testGetValueObject() {
+        JsonObject object = new JsonObjectImpl(Map.of(
+            "x", JsonValue.TRUE,
+            "y", new JsonNumberIntegerImpl(500)
+        ));
+        assertEquals(object, new JsonPointerImpl("").getValue(object));
+        assertEquals(JsonValue.TRUE, new JsonPointerImpl("/x").getValue(object));
+        assertEquals(new JsonNumberIntegerImpl(500), new JsonPointerImpl("/y").getValue(object));
+        assertThrows(JsonException.class, () -> new JsonPointerImpl("/z").getValue(object));
+    }
 }

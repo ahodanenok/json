@@ -105,7 +105,8 @@ final class JsonPointerImpl implements JsonPointer {
 
             return new JsonArrayImpl(newValues);
         } else {
-            throw new IllegalStateException("Uknown json structure: " + target.getClass());
+           throw new IllegalStateException(
+                "Unsupported json structure: " + target.getClass());
         }
     }
 
@@ -140,18 +141,81 @@ final class JsonPointerImpl implements JsonPointer {
 
             return new JsonArrayImpl(newValues);
         } else {
-            throw new IllegalStateException("Uknown json structure: " + target.getClass());
+            throw new IllegalStateException(
+                "Unsupported json structure: " + target.getClass());
         }
     }
 
     @Override
     public boolean containsValue(JsonStructure target) {
-        return false;
+        if (target == null) {
+            return false;
+        }
+
+        if (tokens.isEmpty()) {
+            return true;
+        }
+
+        List<JsonStructure> path = resolveTarget(target);
+        String ref = tokens.get(tokens.size() - 1);
+        JsonStructure currentTarget = path.get(path.size() - 1);
+        if (currentTarget instanceof JsonObject object) {
+            return object.containsKey(ref);
+        } else if (currentTarget instanceof JsonArray array) {
+            if (REF_ARRAY_AFTER_LAST.equals(ref)) {
+                return false;
+            }
+
+            int idx;
+            try {
+                idx = Integer.parseInt(ref);
+            } catch (NumberFormatException e) {
+                return false;
+            }
+
+            if (idx < 0 || idx >= array.size()) {
+                return false;
+            }
+
+            return true;
+        } else {
+            throw new IllegalStateException(
+                "Unsupported json structure: " + currentTarget.getClass());
+        }
     }
 
     @Override
     public JsonValue getValue(JsonStructure target) {
-        return null;
+        Objects.requireNonNull(target);
+        if (tokens.isEmpty()) {
+            return target;
+        }
+
+        List<JsonStructure> path = resolveTarget(target);
+        String ref = tokens.get(tokens.size() - 1);
+        JsonStructure currentTarget = path.get(path.size() - 1);
+        if (currentTarget instanceof JsonObject object) {
+            JsonValue value = object.get(ref);
+            if (value == null) {
+                throw new JsonException("Referenced value doesn't exist");
+            }
+
+            return value;
+        } else if (currentTarget instanceof JsonArray array) {
+            if (REF_ARRAY_AFTER_LAST.equals(ref)) {
+                throw new JsonException("Referenced value doesn't exist");
+            }
+
+            int idx = getArrayIndex(ref);
+            if (idx >= array.size()) {
+                throw new JsonException("Referenced value doesn't exist");
+            }
+
+            return array.get(idx);
+        } else {
+            throw new IllegalStateException(
+                "Unsupported json structure: " + currentTarget.getClass());
+        }
     }
 
     private List<JsonStructure> resolveTarget(JsonStructure target) {
@@ -180,9 +244,8 @@ final class JsonPointerImpl implements JsonPointer {
                     currentTarget = array.get(idx);
                 }
             } else {
-                throw new JsonException(String.format(
-                    "Target must be an array or object, got '%s'",
-                    currentTarget.getValueType()));
+                throw new IllegalStateException(
+                    "Unsupported json structure: " + currentTarget.getClass());
             }
         }
 
