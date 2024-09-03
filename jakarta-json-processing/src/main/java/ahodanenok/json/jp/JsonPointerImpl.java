@@ -116,8 +116,19 @@ final class JsonPointerImpl implements JsonPointer {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T extends JsonStructure> T replace(T target, JsonValue value) {
-        return null;
+        if (tokens.isEmpty()) {
+            throw new JsonException("Referenced value is the target itself");
+        }
+
+        List<JsonStructure> path = resolveTarget(target);
+        JsonStructure newTarget = replace(path.get(path.size() - 1), tokens.get(tokens.size() - 1), value);
+        for (int i = path.size() - 2; i >= 0; i--) {
+            newTarget = replace(path.get(i), tokens.get(i), newTarget);
+        }
+
+        return (T) newTarget;
     }
 
     private JsonStructure replace(JsonStructure target, String ref, JsonValue value) {

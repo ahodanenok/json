@@ -289,4 +289,78 @@ public class JsonPointerImplTest {
         assertEquals(new JsonNumberIntegerImpl(500), new JsonPointerImpl("/y").getValue(object));
         assertThrows(JsonException.class, () -> new JsonPointerImpl("/z").getValue(object));
     }
+
+    @Test
+    public void testReplaceValueInArray() {
+        JsonArray array = new JsonArrayImpl(List.of(JsonValue.TRUE, new JsonStringImpl("hello")));
+        JsonArray result = new JsonPointerImpl("/0").replace(array, new JsonNumberIntegerImpl(1));
+        assertEquals(2, array.size());
+        assertEquals(JsonValue.TRUE, array.get(0));
+        assertEquals("hello", array.getString(1));
+        assertEquals(2, result.size());
+        assertEquals(1, result.getInt(0));
+        assertEquals("hello", result.getString(1));
+    }
+
+    @Test
+    public void testReplaceValueInArrayInsideArray() {
+        JsonArray array = new JsonArrayImpl(List.of(
+            new JsonNumberIntegerImpl(12345),
+            new JsonArrayImpl(List.of(
+                JsonValue.TRUE,
+                new JsonStringImpl("hello"),
+                new JsonNumberIntegerImpl(555)
+            ))
+        ));
+        JsonArray result = new JsonPointerImpl("/1/2").replace(array, JsonValue.FALSE);
+        assertEquals(2, array.size());
+        assertEquals(12345, array.getInt(0));
+        assertEquals(3, array.get(1).asJsonArray().size());
+        assertEquals(JsonValue.TRUE, array.get(1).asJsonArray().get(0));
+        assertEquals("hello", array.get(1).asJsonArray().getString(1));
+        assertEquals(555, array.get(1).asJsonArray().getInt(2));
+        assertEquals(2, result.size());
+        assertEquals(12345, result.getInt(0));
+        assertEquals(3, result.get(1).asJsonArray().size());
+        assertEquals(JsonValue.TRUE, result.get(1).asJsonArray().get(0));
+        assertEquals("hello", result.get(1).asJsonArray().getString(1));
+        assertEquals(JsonValue.FALSE, result.get(1).asJsonArray().get(2));
+    }
+
+    @Test
+    public void testReplaceValueInObject() {
+        JsonObject object = new JsonObjectImpl(Map.of(
+            "a", new JsonStringImpl("xyz"),
+            "b", new JsonNumberIntegerImpl(100)
+        ));
+        JsonObject result = new JsonPointerImpl("/a").replace(object, JsonValue.TRUE);
+        assertEquals(2, object.size());
+        assertEquals("xyz", object.getString("a"));
+        assertEquals(100, object.getInt("b"));
+        assertEquals(2, result.size());
+        assertEquals(JsonValue.TRUE, result.get("a"));
+        assertEquals(100, result.getInt("b"));
+    }
+
+    @Test
+    public void testReplaceValueInObjectInsideObject() {
+        JsonObject object = new JsonObjectImpl(Map.of(
+            "x", JsonValue.TRUE,
+            "y", new JsonObjectImpl(Map.of(
+                "foo", new JsonNumberIntegerImpl(123),
+                "bar", new JsonStringImpl("test")
+            ))
+        ));
+        JsonObject result = new JsonPointerImpl("/y/bar").replace(object, JsonValue.FALSE);
+        assertEquals(2, object.size());
+        assertEquals(JsonValue.TRUE, object.get("x"));
+        assertEquals(2, object.get("y").asJsonObject().size());
+        assertEquals(123, object.get("y").asJsonObject().getInt("foo"));
+        assertEquals("test", object.get("y").asJsonObject().getString("bar"));
+        assertEquals(2, result.size());
+        assertEquals(JsonValue.TRUE, result.get("x"));
+        assertEquals(2, result.get("y").asJsonObject().size());
+        assertEquals(123, result.get("y").asJsonObject().getInt("foo"));
+        assertEquals(JsonValue.FALSE, result.get("y").asJsonObject().get("bar"));
+    }
 }
