@@ -136,7 +136,7 @@ public final class JsonProviderImpl extends JsonProvider {
 
     @Override
     public JsonPointer createPointer(String jsonPointer) {
-        return null;
+        return new JsonPointerImpl(jsonPointer);
     }
 
     @Override
