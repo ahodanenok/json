@@ -363,4 +363,71 @@ public class JsonPointerImplTest {
         assertEquals(123, result.get("y").asJsonObject().getInt("foo"));
         assertEquals(JsonValue.FALSE, result.get("y").asJsonObject().get("bar"));
     }
+
+    @Test
+    public void testRemoveValueInArray() {
+        JsonArray array = new JsonArrayImpl(List.of(JsonValue.TRUE, new JsonStringImpl("123")));
+        JsonArray result = new JsonPointerImpl("/0").remove(array);
+        assertEquals(2, array.size());
+        assertEquals(JsonValue.TRUE, array.get(0));
+        assertEquals("123", array.getString(1));
+        assertEquals(1, result.size());
+        assertEquals("123", result.getString(0));
+    }
+
+    @Test
+    public void testRemoveValueInArrayInsideArray() {
+        JsonArray array = new JsonArrayImpl(List.of(
+            JsonValue.TRUE,
+            new JsonArrayImpl(List.of(
+                JsonValue.FALSE,
+                new JsonNumberIntegerImpl(321)
+            ))
+        ));
+        JsonArray result = new JsonPointerImpl("/1/0").remove(array);
+        assertEquals(2, array.size());
+        assertEquals(JsonValue.TRUE, array.get(0));
+        assertEquals(2, array.get(1).asJsonArray().size());
+        assertEquals(JsonValue.FALSE, array.get(1).asJsonArray().get(0));
+        assertEquals(321, array.get(1).asJsonArray().getInt(1));
+        assertEquals(2, result.size());
+        assertEquals(JsonValue.TRUE, result.get(0));
+        assertEquals(1, result.get(1).asJsonArray().size());
+        assertEquals(321, result.get(1).asJsonArray().getInt(0));
+    }
+
+    @Test
+    public void testRemoveValueInObject() {
+        JsonObject object = new JsonObjectImpl(Map.of(
+            "a", JsonValue.FALSE,
+            "b", new JsonNumberIntegerImpl(100)
+        ));
+        JsonObject result = new JsonPointerImpl("/b").remove(object);
+        assertEquals(2, object.size());
+        assertEquals(JsonValue.FALSE, object.get("a"));
+        assertEquals(100, object.getInt("b"));
+        assertEquals(1, result.size());
+        assertEquals(JsonValue.FALSE, result.get("a"));
+    }
+
+    @Test
+    public void testRemoveValueInObjectInsideObject() {
+        JsonObject object = new JsonObjectImpl(Map.of(
+            "a", JsonValue.TRUE,
+            "aaa", new JsonObjectImpl(Map.of(
+                "x", JsonValue.FALSE,
+                "y", new JsonStringImpl("abc")
+            ))
+        ));
+        JsonObject result = new JsonPointerImpl("/aaa/x").remove(object);
+        assertEquals(2, object.size());
+        assertEquals(JsonValue.TRUE, object.get("a"));
+        assertEquals(2, object.get("aaa").asJsonObject().size());
+        assertEquals(JsonValue.FALSE, object.get("aaa").asJsonObject().get("x"));
+        assertEquals("abc", object.get("aaa").asJsonObject().getString("y"));
+        assertEquals(2, result.size());
+        assertEquals(JsonValue.TRUE, result.get("a"));
+        assertEquals(1, result.get("aaa").asJsonObject().size());
+        assertEquals("abc", result.get("aaa").asJsonObject().getString("y"));
+    }
 }

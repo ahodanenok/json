@@ -111,13 +111,52 @@ final class JsonPointerImpl implements JsonPointer {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T extends JsonStructure> T remove(T target) {
-        return null;
+        Objects.requireNonNull(target);
+        if (tokens.isEmpty()) {
+            throw new JsonException("Referenced value is the target itself");
+        }
+
+        List<JsonStructure> path = resolveTarget(target);
+        JsonStructure newTarget = remove(path.get(path.size() - 1), tokens.get(tokens.size() - 1));
+        for (int i = path.size() - 2; i >= 0; i--) {
+            newTarget = replace(path.get(i), tokens.get(i), newTarget);
+        }
+
+        return (T) newTarget;
+    }
+
+    private JsonStructure remove(JsonStructure target, String ref) {
+        if (target instanceof JsonObject object) {
+            Map<String, JsonValue> newValues = new LinkedHashMap<>(object);
+            newValues.remove(ref);
+
+            return new JsonObjectImpl(newValues);
+        } else if (target instanceof JsonArray array) {
+            List<JsonValue> newValues = new ArrayList<>(array);
+            if (ref.equals(REF_ARRAY_AFTER_LAST)) {
+                throw new JsonException(String.format("Value at index '%s' doesn't exist", REF_ARRAY_AFTER_LAST));
+            } else {
+                int idx = getArrayIndex(ref);
+                if (idx >= newValues.size()) {
+                    throw new JsonException(String.format("Array index is out of range: %s >= %s", idx, array.size()));
+                }
+
+                newValues.remove(idx);
+            }
+
+            return new JsonArrayImpl(newValues);
+        } else {
+           throw new IllegalStateException(
+                "Unsupported json structure: " + target.getClass());
+        }
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T extends JsonStructure> T replace(T target, JsonValue value) {
+        Objects.requireNonNull(target);
         if (tokens.isEmpty()) {
             throw new JsonException("Referenced value is the target itself");
         }
