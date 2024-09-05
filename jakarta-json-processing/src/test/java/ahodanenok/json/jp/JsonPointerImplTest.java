@@ -49,20 +49,6 @@ public class JsonPointerImplTest {
     }
 
     @Test
-    public void testErrorWhenAddDifferentTypesAtEmptyPointer() {
-        JsonArray a = new JsonArrayImpl(List.of());
-        JsonObject b = new JsonObjectImpl(Map.of());
-        JsonException e1 = assertThrows(JsonException.class, () -> new JsonPointerImpl("").add(a, b));
-        assertEquals(
-            "Value of type 'ahodanenok.json.jp.JsonObjectImpl' is not assignable to the target of type 'ahodanenok.json.jp.JsonArrayImpl'",
-            e1.getMessage());
-        JsonException e2 = assertThrows(JsonException.class, () -> new JsonPointerImpl("").add(b, a));
-        assertEquals(
-            "Value of type 'ahodanenok.json.jp.JsonArrayImpl' is not assignable to the target of type 'ahodanenok.json.jp.JsonObjectImpl'",
-            e2.getMessage());
-    }
-
-    @Test
     public void testAddValueToArray() {
         JsonArray array = new JsonArrayImpl(List.of(
             new JsonNumberIntegerImpl(10),

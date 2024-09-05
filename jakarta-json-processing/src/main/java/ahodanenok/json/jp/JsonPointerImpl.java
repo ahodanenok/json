@@ -61,21 +61,15 @@ final class JsonPointerImpl implements JsonPointer {
         Objects.requireNonNull(value);
 
         if (tokens.isEmpty()) {
-            if (target.getClass().isAssignableFrom(value.getClass())) {
-                return (T) value;
-            } else {
-                throw new JsonException(String.format(
-                    "Value of type '%s' is not assignable to the target of type '%s'",
-                    value.getClass().getCanonicalName(),
-                    target.getClass().getCanonicalName()));
-            }
+            return (T) value;
         }
 
-        if (tokens.size() == 1) {
-            return (T) add(target, tokens.get(0), value);
+        TargetResolutionResult result = resolveTarget(target);
+        if (!result.resolved) {
+            throw new JsonException("Referenced value doesn't exist");
         }
 
-        List<JsonStructure> path = resolveTarget(target);
+        List<JsonStructure> path = result.path;
         JsonStructure newTarget = add(path.get(path.size() - 1), tokens.get(tokens.size() - 1), value);
         for (int i = path.size() - 2; i >= 0; i--) {
             newTarget = replace(path.get(i), tokens.get(i), newTarget);
@@ -97,7 +91,8 @@ final class JsonPointerImpl implements JsonPointer {
             } else {
                 int idx = getArrayIndex(ref);
                 if (idx > newValues.size()) {
-                    throw new JsonException(String.format("Array index is out of range: %s > %s", idx, newValues.size()));
+                    throw new JsonException(String.format(
+                        "Array index is out of range: %s > %s", idx, newValues.size()));
                 }
 
                 newValues.add(idx, value);
@@ -114,11 +109,17 @@ final class JsonPointerImpl implements JsonPointer {
     @SuppressWarnings("unchecked")
     public <T extends JsonStructure> T remove(T target) {
         Objects.requireNonNull(target);
+
         if (tokens.isEmpty()) {
             throw new JsonException("Referenced value is the target itself");
         }
 
-        List<JsonStructure> path = resolveTarget(target);
+        TargetResolutionResult result = resolveTarget(target);
+        if (!result.resolved) {
+            throw new JsonException("Referenced value doesn't exist");
+        }
+
+        List<JsonStructure> path = result.path;
         JsonStructure newTarget = remove(path.get(path.size() - 1), tokens.get(tokens.size() - 1));
         for (int i = path.size() - 2; i >= 0; i--) {
             newTarget = replace(path.get(i), tokens.get(i), newTarget);
@@ -129,6 +130,10 @@ final class JsonPointerImpl implements JsonPointer {
 
     private JsonStructure remove(JsonStructure target, String ref) {
         if (target instanceof JsonObject object) {
+            if (!object.containsKey(ref)) {
+                throw new JsonException("Referenced value doesn't exist");
+            }
+
             Map<String, JsonValue> newValues = new LinkedHashMap<>(object);
             newValues.remove(ref);
 
@@ -157,11 +162,18 @@ final class JsonPointerImpl implements JsonPointer {
     @SuppressWarnings("unchecked")
     public <T extends JsonStructure> T replace(T target, JsonValue value) {
         Objects.requireNonNull(target);
+        Objects.requireNonNull(value);
+
         if (tokens.isEmpty()) {
             throw new JsonException("Referenced value is the target itself");
         }
 
-        List<JsonStructure> path = resolveTarget(target);
+        TargetResolutionResult result = resolveTarget(target);
+        if (!result.resolved) {
+            throw new JsonException("Referenced value doesn't exist");
+        }
+
+        List<JsonStructure> path = result.path;
         JsonStructure newTarget = replace(path.get(path.size() - 1), tokens.get(tokens.size() - 1), value);
         for (int i = path.size() - 2; i >= 0; i--) {
             newTarget = replace(path.get(i), tokens.get(i), newTarget);
@@ -171,8 +183,12 @@ final class JsonPointerImpl implements JsonPointer {
     }
 
     private JsonStructure replace(JsonStructure target, String ref, JsonValue value) {
-        if (target instanceof JsonObject) {
-            Map<String, JsonValue> newValues = new LinkedHashMap<>(target.asJsonObject());
+        if (target instanceof JsonObject object) {
+            if (!object.containsKey(ref)) {
+                throw new JsonException("Referenced value doesn't exist");
+            }
+
+            Map<String, JsonValue> newValues = new LinkedHashMap<>(object);
             newValues.put(ref, value);
 
             return new JsonObjectImpl(newValues);
@@ -206,9 +222,13 @@ final class JsonPointerImpl implements JsonPointer {
             return true;
         }
 
-        List<JsonStructure> path = resolveTarget(target);
+        TargetResolutionResult result = resolveTarget(target);
+        if (!result.resolved) {
+            return false;
+        }
+
         String ref = tokens.get(tokens.size() - 1);
-        JsonStructure currentTarget = path.get(path.size() - 1);
+        JsonStructure currentTarget = result.path.get(result.path.size() - 1);
         if (currentTarget instanceof JsonObject object) {
             return object.containsKey(ref);
         } else if (currentTarget instanceof JsonArray array) {
@@ -230,20 +250,25 @@ final class JsonPointerImpl implements JsonPointer {
             return true;
         } else {
             throw new IllegalStateException(
-                "Unsupported json structure: " + currentTarget.getClass());
+                "Unsupported json structure: " + target.getClass());
         }
     }
 
     @Override
     public JsonValue getValue(JsonStructure target) {
         Objects.requireNonNull(target);
+
         if (tokens.isEmpty()) {
             return target;
         }
 
-        List<JsonStructure> path = resolveTarget(target);
+        TargetResolutionResult result = resolveTarget(target);
+        if (!result.resolved) {
+            throw new JsonException("Referenced value doesn't exist");
+        }
+
         String ref = tokens.get(tokens.size() - 1);
-        JsonStructure currentTarget = path.get(path.size() - 1);
+        JsonStructure currentTarget = result.path.get(result.path.size() - 1);
         if (currentTarget instanceof JsonObject object) {
             JsonValue value = object.get(ref);
             if (value == null) {
@@ -268,13 +293,15 @@ final class JsonPointerImpl implements JsonPointer {
         }
     }
 
-    private List<JsonStructure> resolveTarget(JsonStructure target) {
+    private TargetResolutionResult resolveTarget(JsonStructure target) {
         List<JsonStructure> path = new ArrayList<>(tokens.size());
         JsonValue currentTarget = target;
         Iterator<String> tokenIterator = tokens.iterator();
         while (tokenIterator.hasNext()) {
             String token = tokenIterator.next();
-            if (currentTarget instanceof JsonObject object) {
+            if (currentTarget == null) {
+                return TargetResolutionResult.failed();
+            } else if (currentTarget instanceof JsonObject object) {
                 path.add(object);
                 if (tokenIterator.hasNext()) {
                     currentTarget = object.get(token);
@@ -299,7 +326,7 @@ final class JsonPointerImpl implements JsonPointer {
             }
         }
 
-        return path;
+        return TargetResolutionResult.resolved(path);
     }
 
     private int getArrayIndex(String ref) {
@@ -317,5 +344,26 @@ final class JsonPointerImpl implements JsonPointer {
         } catch (NumberFormatException e) {
             throw new JsonException(String.format("Invalid array index: '%s'", ref));
         }
+    }
+
+    private static class TargetResolutionResult {
+
+        static TargetResolutionResult resolved(List<JsonStructure> path) {//, String ref) {
+            TargetResolutionResult result = new TargetResolutionResult();
+            result.resolved = true;
+            result.path = path;
+
+            return result;
+        }
+
+        static TargetResolutionResult failed() {
+            TargetResolutionResult result = new TargetResolutionResult();
+            result.resolved = false;
+
+            return result;
+        }
+
+        boolean resolved;
+        List<JsonStructure> path;
     }
 }
