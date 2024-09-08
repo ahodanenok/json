@@ -151,7 +151,7 @@ public final class JsonProviderImpl extends JsonProvider {
 
     @Override
     public JsonPatch createPatch(JsonArray array) {
-        return null;
+        return new JsonPatchImpl(array);
     }
 
     @Override
