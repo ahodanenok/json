@@ -141,12 +141,12 @@ public final class JsonProviderImpl extends JsonProvider {
 
     @Override
     public JsonPatchBuilder createPatchBuilder() {
-        return null;
+        return new JsonPatchBuilderImpl();
     }
 
     @Override
     public JsonPatchBuilder createPatchBuilder(JsonArray array) {
-        return null;
+        return new JsonPatchBuilderImpl(array);
     }
 
     @Override
