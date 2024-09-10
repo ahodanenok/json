@@ -156,7 +156,7 @@ public final class JsonProviderImpl extends JsonProvider {
 
     @Override
     public JsonPatch createDiff(JsonStructure source, JsonStructure target) {
-        return null;
+        return DiffPatch.create(source, target);
     }
 
     @Override
