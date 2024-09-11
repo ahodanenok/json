@@ -161,12 +161,12 @@ public final class JsonProviderImpl extends JsonProvider {
 
     @Override
     public JsonMergePatch createMergePatch(JsonValue patch) {
-        return null;
+        return new JsonMergePatchImpl(patch);
     }
 
     @Override
     public JsonMergePatch createMergeDiff(JsonValue source, JsonValue target) {
-        return null;
+        return MergeDiffPatch.create(source, target);
     }
 
     @Override
