@@ -8,7 +8,7 @@ public final class JsonString extends JsonValue {
 
     private final String value;
 
-    JsonString(String value) {
+    private JsonString(String value) {
         super(ValueType.STRING);
         this.value = value;
     }

@@ -27,7 +27,6 @@ public final class JsonObject extends JsonValue {
     }
 
     public JsonValue getValue(String name) {
-        // todo: not found
         return values.get(name);
     }
 
@@ -35,7 +34,7 @@ public final class JsonObject extends JsonValue {
         return values.size();
     }
 
-    public static class Builder {
+    public static final class Builder {
 
         private final Map<String, JsonValue> values;
 

@@ -11,7 +11,7 @@ public final class JsonBoolean extends JsonValue {
 
     private final boolean value;
 
-    JsonBoolean(boolean value) {
+    private JsonBoolean(boolean value) {
         super(ValueType.BOOLEAN);
         this.value = value;
     }

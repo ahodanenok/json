@@ -12,7 +12,7 @@ public abstract class JsonNumber extends JsonValue {
         return new JsonNumber.BigDecimalType(value);
     }
 
-    JsonNumber() {
+    private JsonNumber() {
         super(ValueType.NUMBER);
     }
 
@@ -24,11 +24,11 @@ public abstract class JsonNumber extends JsonValue {
 
     public abstract BigDecimal bigDecimalValue();
 
-    final static class BigDecimalType extends JsonNumber {
+    private static class BigDecimalType extends JsonNumber {
 
         private final BigDecimal value;
 
-        public BigDecimalType(BigDecimal value) {
+        private BigDecimalType(BigDecimal value) {
             this.value = value;
         }
 
