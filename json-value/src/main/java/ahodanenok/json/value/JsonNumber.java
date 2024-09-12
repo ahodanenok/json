@@ -2,7 +2,7 @@ package ahodanenok.json.value;
 
 import java.math.BigDecimal;
 
-public abstract class JsonNumber extends JsonValue {
+public abstract sealed class JsonNumber extends JsonValue {
 
     public static JsonNumber of(double value) {
         return new JsonNumber.BigDecimalType(BigDecimal.valueOf(value));
@@ -24,7 +24,7 @@ public abstract class JsonNumber extends JsonValue {
 
     public abstract BigDecimal bigDecimalValue();
 
-    private static class BigDecimalType extends JsonNumber {
+    private static final class BigDecimalType extends JsonNumber {
 
         private final BigDecimal value;
 

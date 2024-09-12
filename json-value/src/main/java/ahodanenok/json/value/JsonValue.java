@@ -1,6 +1,7 @@
 package ahodanenok.json.value;
 
-public abstract class JsonValue {
+public abstract sealed class JsonValue
+        permits JsonArray, JsonBoolean, JsonNull, JsonNumber, JsonObject, JsonString {
 
     public static final JsonNull NULL = new JsonNull();
 
