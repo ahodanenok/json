@@ -209,10 +209,6 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
 
     private void prepareWriteOnValue() {
         WriteContext context = contexts.peek();
-        if (context == null) {
-            throw new IllegalStateException("No context!");
-        }
-
         if (context.type == ContextType.ROOT && context.valuePos > 0) {
             throw new JsonWriteException("There can be only one value at the root");
         } else if (context.type == ContextType.ARRAY && context.valuePos > 0) {
