@@ -300,7 +300,7 @@ public class JsonGeneratorImplTest {
             generator.writeStartArray();
             generator.writeKey("c");
         });
-        assertEquals("Must be in an object context, but current is array", e.getMessage());
+    assertEquals("Must be in 'OBJECT' context, but current context is 'ARRAY'", e.getMessage());
     }
 
     @Test

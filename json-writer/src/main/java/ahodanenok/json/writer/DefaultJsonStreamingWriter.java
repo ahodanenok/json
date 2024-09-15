@@ -86,7 +86,7 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
         WriteContext context = contexts.peek();
         if (context.type != ContextType.OBJECT) {
             throw new JsonWriteException(String.format(
-                "Must be in an object context, but current is %s", context.type.name().toLowerCase()));
+                "Must be in '%s' context, but current context is '%s'", ContextType.OBJECT, context.type));
         } else if (context.nameWritten) {
             throw new JsonWriteException("Can't write two names in a row without a value between them");
         }
