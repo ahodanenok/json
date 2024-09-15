@@ -18,7 +18,7 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
     }
 
     private final JsonOutput output;
-    private LinkedList<WriteContext> contexts;
+    private final LinkedList<WriteContext> contexts;
 
     public DefaultJsonStreamingWriter(JsonOutput output) {
         this.output = output;
@@ -40,7 +40,7 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
         try {
             output.writeBeginArray();
         } catch (IOException e) {
-            throw new JsonWriteIOException("Failed to writeBeginArray", e);
+            throw new JsonWriteException("Failed to writeBeginArray", e);
         }
     }
 
@@ -55,7 +55,7 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
         try {
             output.writeBeginObject();
         } catch (IOException e) {
-            throw new JsonWriteIOException("Failed to writeBeginObject", e);
+            throw new JsonWriteException("Failed to writeBeginObject", e);
         }
     }
 
@@ -66,13 +66,13 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
             try {
                 output.writeEndArray();
             } catch (IOException e) {
-                throw new JsonWriteIOException("Failed to writeEnd", e);
+                throw new JsonWriteException("Failed to writeEnd", e);
             }
         } else if (context.type == ContextType.OBJECT) {
             try {
                 output.writeEndObject();
             } catch (IOException e) {
-                throw new JsonWriteIOException("Failed to writeEnd", e);
+                throw new JsonWriteException("Failed to writeEnd", e);
             }
         } else if (context.type == ContextType.ROOT) {
             throw new JsonWriteException("There is no open object or array to end");
@@ -95,7 +95,7 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
             try {
                 output.writeValueSeparator();
             } catch (IOException e) {
-                throw new JsonWriteIOException("Failed to writeValueSeparator", e);
+                throw new JsonWriteException("Failed to writeValueSeparator", e);
             }
         }
 
@@ -104,7 +104,7 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
             output.writeNameSeparator();
             context.nameWritten = true;
         } catch (IOException e) {
-            throw new JsonWriteIOException("Failed to writeName", e);
+            throw new JsonWriteException("Failed to writeName", e);
         }
     }
 
@@ -114,7 +114,7 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
         try {
             output.writeString(str);
         } catch (IOException e) {
-            throw new JsonWriteIOException("Failed to writeString", e);
+            throw new JsonWriteException("Failed to writeString", e);
         }
     }
 
@@ -124,7 +124,7 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
         try {
             output.writeNumber(num);
         } catch (IOException e) {
-            throw new JsonWriteIOException("Failed to writeNumber", e);
+            throw new JsonWriteException("Failed to writeNumber", e);
         }
     }
 
@@ -134,7 +134,7 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
         try {
             output.writeNumber(num);
         } catch (IOException e) {
-            throw new JsonWriteIOException("Failed to writeNumber", e);
+            throw new JsonWriteException("Failed to writeNumber", e);
         }
     }
 
@@ -150,7 +150,7 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
         try {
             output.writeNumber(num);
         } catch (IOException e) {
-            throw new JsonWriteIOException("Failed to writeNumber", e);
+            throw new JsonWriteException("Failed to writeNumber", e);
         }
     }
 
@@ -160,7 +160,7 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
         try {
             output.writeNumber(num);
         } catch (IOException e) {
-            throw new JsonWriteIOException("Failed to writeNumber", e);
+            throw new JsonWriteException("Failed to writeNumber", e);
         }
     }
 
@@ -170,7 +170,7 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
         try {
             output.writeNumber(num);
         } catch (IOException e) {
-            throw new JsonWriteIOException("Failed to writeNumber", e);
+            throw new JsonWriteException("Failed to writeNumber", e);
         }
     }
 
@@ -180,7 +180,7 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
         try {
             output.writeBoolean(bool);
         } catch (IOException e) {
-            throw new JsonWriteIOException("Failed to writeBoolean", e);
+            throw new JsonWriteException("Failed to writeBoolean", e);
         }
     }
 
@@ -190,7 +190,7 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
         try {
             output.writeNull();
         } catch (IOException e) {
-            throw new JsonWriteIOException("Failed to writeNull", e);
+            throw new JsonWriteException("Failed to writeNull", e);
         }
     }
 
@@ -203,7 +203,7 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
         try {
             output.close();
         } catch (IOException e) {
-            throw new JsonWriteIOException("Failed to close output", e);
+            throw new JsonWriteException("Failed to close output", e);
         }
     }
 
@@ -219,7 +219,7 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
             try {
                 output.writeValueSeparator();
             } catch (IOException e) {
-                throw new JsonWriteIOException("Failed to writeValueSeparator", e);
+                throw new JsonWriteException("Failed to writeValueSeparator", e);
             }
         } else if (context.type == ContextType.OBJECT && !context.nameWritten) {
             throw new JsonWriteException("Each object member must begin with a name");

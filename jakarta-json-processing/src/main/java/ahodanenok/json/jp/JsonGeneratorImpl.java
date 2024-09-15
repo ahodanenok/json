@@ -18,7 +18,6 @@ import ahodanenok.json.writer.DefaultJsonStreamingWriter;
 import ahodanenok.json.writer.JsonOutput;
 import ahodanenok.json.writer.JsonStreamingWriter;
 import ahodanenok.json.writer.JsonWriteException;
-import ahodanenok.json.writer.JsonWriteIOException;
 
 final class JsonGeneratorImpl implements JsonGenerator {
 
@@ -233,8 +232,6 @@ final class JsonGeneratorImpl implements JsonGenerator {
     private void execute(Runnable action) {
         try {
             action.run();
-        } catch (JsonWriteIOException e) {
-            throw new JsonException(e.getMessage(), e.getCause());
         } catch (JsonWriteException e) {
             if (e.getCause() instanceof IOException) {
                 throw new JsonException(e.getMessage(), e.getCause());
