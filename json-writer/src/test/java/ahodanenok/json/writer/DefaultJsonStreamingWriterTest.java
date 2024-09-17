@@ -287,4 +287,24 @@ public class DefaultJsonStreamingWriterTest {
         });
         assertEquals("Each object member must begin with a name", e.getMessage());
     }
+
+    @Test
+    public void testErrorWhenObjectNotFinishedOnClose() {
+        JsonStreamingWriter jsonWriter = new DefaultJsonStreamingWriter(new DefaultJsonOutput(new StringWriter()));
+        JsonWriteException e = assertThrows(JsonWriteException.class, () -> {
+            jsonWriter.writeBeginObject();
+            jsonWriter.close();
+        });
+        assertEquals("Incomplete json", e.getMessage());
+    }
+
+    @Test
+    public void testErrorWhenArrayNotFinishedOnClose() {
+        JsonStreamingWriter jsonWriter = new DefaultJsonStreamingWriter(new DefaultJsonOutput(new StringWriter()));
+        JsonWriteException e = assertThrows(JsonWriteException.class, () -> {
+            jsonWriter.writeBeginArray();
+            jsonWriter.close();
+        });
+        assertEquals("Incomplete json", e.getMessage());
+    }
 }
