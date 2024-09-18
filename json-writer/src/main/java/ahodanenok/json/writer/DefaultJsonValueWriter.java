@@ -19,8 +19,7 @@ public final class DefaultJsonValueWriter implements JsonValueWriter {
         try {
             doWriteValue(value, writer);
         } catch (IOException e) {
-            // todo: custom exception?
-            throw new RuntimeException(e);
+            throw new JsonWriteException("Failed to write the value", e);
         }
     }
 
@@ -39,7 +38,7 @@ public final class DefaultJsonValueWriter implements JsonValueWriter {
         } else if (type.equals(ValueType.OBJECT)) {
             writeObject(value.asObject(), writer);
         } else {
-            throw new IllegalStateException(String.format("Unsupported value type '%s'", type));
+            throw new IllegalStateException(String.format("Unknown value type '%s'", type));
         }
     }
 
