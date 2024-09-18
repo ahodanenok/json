@@ -7,6 +7,10 @@ import java.util.Set;
 
 public final class JsonObject extends JsonValue {
 
+    public static JsonObject of(Map<String, JsonValue> values) {
+        return new JsonObject(new LinkedHashMap<>(values));
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -48,7 +52,7 @@ public final class JsonObject extends JsonValue {
         }
 
         public JsonObject build() {
-            return new JsonObject(values);
+            return new JsonObject(new LinkedHashMap<>(values));
         }
     }
 }

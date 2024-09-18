@@ -5,6 +5,10 @@ import java.util.List;
 
 public final class JsonArray extends JsonValue {
 
+    public static JsonArray of(List<JsonValue> values) {
+        return new JsonArray(new ArrayList<>(values));
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -38,7 +42,7 @@ public final class JsonArray extends JsonValue {
         }
 
         public JsonArray build() {
-            return new JsonArray(items);
+            return new JsonArray(new ArrayList<>(items));
         }
     }
 }
