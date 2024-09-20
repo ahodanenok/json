@@ -35,6 +35,8 @@ public interface JsonOutput extends Closeable {
 
     void writeNull() throws IOException;
 
+    void writeRaw(String s) throws IOException;
+
     void flush() throws IOException;
 
     void close() throws IOException;

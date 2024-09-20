@@ -7,12 +7,8 @@ import java.util.LinkedList;
 
 public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
 
-    private enum ContextType {
-        ROOT, ARRAY, OBJECT;
-    }
-
     private class WriteContext {
-        ContextType type;
+        WriteContextType type;
         int valuePos;
         boolean nameWritten;
     }
@@ -25,7 +21,7 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
         this.contexts = new LinkedList<>();
 
         WriteContext context = new WriteContext();
-        context.type = ContextType.ROOT;
+        context.type = WriteContextType.ROOT;
         this.contexts.push(context);
     }
 
@@ -34,7 +30,7 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
         prepareWriteOnValue();
 
         WriteContext arrayContext = new WriteContext();
-        arrayContext.type = ContextType.ARRAY;
+        arrayContext.type = WriteContextType.ARRAY;
         contexts.push(arrayContext);
 
         try {
@@ -49,7 +45,7 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
         prepareWriteOnValue();
 
         WriteContext arrayContext = new WriteContext();
-        arrayContext.type = ContextType.OBJECT;
+        arrayContext.type = WriteContextType.OBJECT;
         contexts.push(arrayContext);
 
         try {
@@ -62,19 +58,19 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
     @Override
     public void writeEnd() {
         WriteContext context = contexts.pop();
-        if (context.type == ContextType.ARRAY) {
+        if (context.type == WriteContextType.ARRAY) {
             try {
                 output.writeEndArray();
             } catch (IOException e) {
                 throw new JsonWriteException("Failed to writeEnd", e);
             }
-        } else if (context.type == ContextType.OBJECT) {
+        } else if (context.type == WriteContextType.OBJECT) {
             try {
                 output.writeEndObject();
             } catch (IOException e) {
                 throw new JsonWriteException("Failed to writeEnd", e);
             }
-        } else if (context.type == ContextType.ROOT) {
+        } else if (context.type == WriteContextType.ROOT) {
             throw new JsonWriteException("There is no open object or array to end");
         } else {
             throw new IllegalStateException("Unknown context: " + context.type);
@@ -84,9 +80,9 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
     @Override
     public void writeName(String name) {
         WriteContext context = contexts.peek();
-        if (context.type != ContextType.OBJECT) {
+        if (context.type != WriteContextType.OBJECT) {
             throw new JsonWriteException(String.format(
-                "Must be in '%s' context, but current context is '%s'", ContextType.OBJECT, context.type));
+                "Must be in '%s' context, but current context is '%s'", WriteContextType.OBJECT, context.type));
         } else if (context.nameWritten) {
             throw new JsonWriteException("Can't write two names in a row without a value between them");
         }
@@ -196,7 +192,7 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
 
     @Override
     public void close() {
-        if (contexts.peek().type != ContextType.ROOT) {
+        if (contexts.peek().type != WriteContextType.ROOT) {
             throw new JsonWriteException("Incomplete json");
         }
 
@@ -209,15 +205,15 @@ public final class DefaultJsonStreamingWriter implements JsonStreamingWriter {
 
     private void prepareWriteOnValue() {
         WriteContext context = contexts.peek();
-        if (context.type == ContextType.ROOT && context.valuePos > 0) {
+        if (context.type == WriteContextType.ROOT && context.valuePos > 0) {
             throw new JsonWriteException("There can be only one value at the root");
-        } else if (context.type == ContextType.ARRAY && context.valuePos > 0) {
+        } else if (context.type == WriteContextType.ARRAY && context.valuePos > 0) {
             try {
                 output.writeValueSeparator();
             } catch (IOException e) {
                 throw new JsonWriteException("Failed to writeValueSeparator", e);
             }
-        } else if (context.type == ContextType.OBJECT && !context.nameWritten) {
+        } else if (context.type == WriteContextType.OBJECT && !context.nameWritten) {
             throw new JsonWriteException("Each object member must begin with a name");
         }
 

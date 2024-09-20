@@ -102,6 +102,11 @@ public final class DefaultJsonOutput implements JsonOutput {
         writer.write("null");
     }
 
+    @Override
+    public void writeRaw(String s) throws IOException {
+        writer.write(s);
+    }
+
     public void flush() throws IOException {
         writer.flush();
     }
