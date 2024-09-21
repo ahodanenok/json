@@ -11,7 +11,6 @@ public final class PrettyPrintingJsonOutput implements JsonOutput {
 
         WriteContextType type;
         int pos;
-        boolean valueSeparatorSeen;
         boolean nameSeparatorSeen;
     }
 
@@ -90,9 +89,6 @@ public final class PrettyPrintingJsonOutput implements JsonOutput {
 
     @Override
     public void writeValueSeparator() throws IOException {
-        WriteContext context = contexts.peek();
-        context.valueSeparatorSeen = true;
-
         out.writeValueSeparator();
     }
 
@@ -177,7 +173,6 @@ public final class PrettyPrintingJsonOutput implements JsonOutput {
             out.writeRaw(whitespace);
         }
 
-        context.valueSeparatorSeen = false;
         context.nameSeparatorSeen = false;
         context.pos++;
     }
