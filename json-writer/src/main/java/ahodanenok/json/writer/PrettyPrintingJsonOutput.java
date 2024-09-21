@@ -18,24 +18,32 @@ public final class PrettyPrintingJsonOutput implements JsonOutput {
     private final JsonOutput out;
     private final LinkedList<WriteContext> contexts;
 
-    private String whitespace = " ";
-    private String indent = "  ";
+    private String whitespace;
+    private String indent;
+    private String lineSeparator;
 
     public PrettyPrintingJsonOutput(JsonOutput out) {
         this.out = out;
         this.contexts = new LinkedList<>();
+        this.whitespace = " ";
+        this.indent = "  ";
+        this.lineSeparator = System.lineSeparator();
 
         WriteContext context = new WriteContext();
         context.type = WriteContextType.ROOT;
         this.contexts.push(context);
     }
 
-    public void setWritespace(String whitespace) {
+    public void setWhitespace(String whitespace) {
         this.whitespace = whitespace;
     }
 
     public void setIndent(String indent) {
         this.indent = indent;
+    }
+
+    public void setLineSeparator(String lineSeparator) {
+        this.lineSeparator = lineSeparator;
     }
 
     @Override
@@ -175,7 +183,7 @@ public final class PrettyPrintingJsonOutput implements JsonOutput {
     }
 
     private void writeOnNewLine() throws IOException {
-        out.writeRaw(System.lineSeparator());
+        out.writeRaw(lineSeparator);
         for (int i = 0; i < contexts.size() - 1; i++) {
             out.writeRaw(indent);
         }
