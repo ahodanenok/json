@@ -2,7 +2,7 @@ package ahodanenok.json.parser.tokenizer;
 
 import java.math.BigDecimal;
 
-abstract class JsonNumberToken extends JsonToken {
+abstract sealed class JsonNumberToken extends JsonToken {
 
     JsonNumberToken() {
         super(TokenType.NUMBER);

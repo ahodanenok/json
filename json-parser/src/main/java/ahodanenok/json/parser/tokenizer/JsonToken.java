@@ -2,7 +2,7 @@ package ahodanenok.json.parser.tokenizer;
 
 import java.math.BigDecimal;
 
-public abstract class JsonToken {
+public abstract sealed class JsonToken permits JsonLiteralToken, JsonNumberToken, JsonStringToken {
 
     static final JsonToken BEGIN_ARRAY = new JsonLiteralToken(TokenType.BEGIN_ARRAY, "[");
     static final JsonToken END_ARRAY = new JsonLiteralToken(TokenType.END_ARRAY, "]");
